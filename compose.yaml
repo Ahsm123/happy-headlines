@@ -14,17 +14,27 @@
       interval: 5s
       retries: 10
 
-  article-service:
+  article-service-1: &article
     build:
       context: src/ArticleService
-    ports:
-      - "8080:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__ArticleDbConnection: "Host=article-db;Port=5432;Database=articledb;Username=postgres;Password=dev"
     depends_on:
       article-db:
         condition: service_healthy
+        
+  article-service-2: *article
+  article-service-3: *article
+        
+  article-lb:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/article.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - article-service-1
 
 volumes:
   article-db-data:

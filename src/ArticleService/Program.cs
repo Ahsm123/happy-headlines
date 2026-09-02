@@ -17,6 +17,8 @@ app.MapGet("/health", () => Results.Ok());
 using (var scope = app.Services.CreateScope())
     scope.ServiceProvider.GetRequiredService<ArticleDbContext>().Database.Migrate();
 
+app.MapGet("/whoami", () => Environment.MachineName);
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
