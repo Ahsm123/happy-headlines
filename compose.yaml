@@ -1,0 +1,31 @@
+﻿services:
+  article-db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: articledb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - article-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      retries: 10
+
+  article-service:
+    build:
+      context: src/ArticleService
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__ArticleDbConnection: "Host=article-db;Port=5432;Database=articledb;Username=postgres;Password=dev"
+    depends_on:
+      article-db:
+        condition: service_healthy
+
+volumes:
+  article-db-data:
+
