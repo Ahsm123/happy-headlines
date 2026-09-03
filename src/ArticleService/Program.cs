@@ -1,21 +1,25 @@
 using ArticleService.Data;
+using ArticleService.Models;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddDbContext<ArticleDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("ArticleDbConnection")));
+builder.Services.AddSingleton<Coordinator>();
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-app.MapGet("/health", () => Results.Ok());
+var coordinator = app.Services.GetRequiredService<Coordinator>();
+foreach (Region region in Enum.GetValues<Region>())
+{
+    using var db = coordinator.GetArticleDbContext(region);
+    db.Database.Migrate();
+}
 
-using (var scope = app.Services.CreateScope())
-    scope.ServiceProvider.GetRequiredService<ArticleDbContext>().Database.Migrate();
+app.MapGet("/health", () => Results.Ok());
 
 app.MapGet("/whoami", () => Environment.MachineName);
 
