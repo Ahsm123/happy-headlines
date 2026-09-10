@@ -1,3 +1,3 @@
 ﻿namespace CommentService.Models;
 
-public record FilterResult();
+public record FilterResult(string CleanedText);
