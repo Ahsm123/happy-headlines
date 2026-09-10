@@ -1,3 +1,3 @@
 ﻿namespace ProfanityService.Models;
 
-public record FilterResult();
+public record FilterResult(string CleanedText);

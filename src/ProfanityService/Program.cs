@@ -1,9 +1,13 @@
+using Microsoft.EntityFrameworkCore;
+using ProfanityService.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddDbContext<ProfanityDbContext>(options => options
+    .UseNpgsql(builder.Configuration.GetConnectionString("ProfanityDbConnection")));
 
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
@@ -14,9 +18,15 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ProfanityDbContext>();
+    db.Database.Migrate();
+}
 
-app.UseAuthorization();
+app.MapGet("/health", () => Results.Ok());
+
+app.MapGet("/whoami", () => Environment.MachineName);
 
 app.MapControllers();
 
