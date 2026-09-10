@@ -137,6 +137,55 @@
       - ./nginx/article.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - article-service-1
+        
+        
+  comment-service:
+    build:
+      context: src/CommentService
+    ports:
+      - "8081:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    depends_on:
+      comment-db:
+        condition: service_healthy
+
+  comment-db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: commentdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: dev
+    volumes:
+      - comment-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      retries: 10
+
+  profanity-service:
+    build:
+      context: src/ProfanityService
+    ports:
+      - "8082:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    depends_on:
+      profanity-db:
+        condition: service_healthy
+
+  profanity-db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: profanitydb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: dev
+    volumes:
+      - profanity-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      retries: 10
 
 volumes:
   global-db-data:
@@ -147,4 +196,6 @@ volumes:
   north-america-db-data:
   oceania-db-data:
   south-america-db-data:
+  comment-db-data:
+  profanity-db-data:
 
