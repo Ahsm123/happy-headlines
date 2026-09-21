@@ -1,0 +1,32 @@
+using DraftService.Models;
+using DraftService.Services;
+using Microsoft.AspNetCore.Mvc;
+
+namespace DraftService.Controllers;
+
+[ApiController]
+[Route("api/v1/[controller]")]
+public class DraftsController(IDraftService draftService) : ControllerBase
+{
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<Draft>> CreateAsync(Draft? draft, CancellationToken ct = default)
+    {
+        if (draft == null)
+        {
+            return BadRequest();
+        }
+        var result = await draftService.CreateAsync(draft, ct);
+        return Ok(result);
+    }
+    
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<Draft>>> GetDrafts(CancellationToken ct = default)
+    {
+        var drafts = await draftService.GetAsync(ct);
+        return Ok(drafts);
+    }
+    
+}

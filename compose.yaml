@@ -186,6 +186,32 @@
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
       retries: 10
+      
+  draft-service:
+    build:
+      context: src/DraftService
+    ports:
+      - "8083:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    depends_on:
+      profanity-db:
+        condition: service_healthy
+  
+  draft-db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: draftdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: dev
+    volumes:
+      - draft-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      retries: 10
+  
+  
 
 volumes:
   global-db-data:
@@ -198,4 +224,5 @@ volumes:
   south-america-db-data:
   comment-db-data:
   profanity-db-data:
+  draft-db-data:
 
