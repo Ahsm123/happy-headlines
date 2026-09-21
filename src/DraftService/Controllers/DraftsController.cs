@@ -1,6 +1,7 @@
 using DraftService.Models;
 using DraftService.Services;
 using Microsoft.AspNetCore.Mvc;
+using ServiceDefaults;
 
 namespace DraftService.Controllers;
 
@@ -13,6 +14,8 @@ public class DraftsController(IDraftService draftService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<Draft>> CreateAsync(Draft? draft, CancellationToken ct = default)
     {
+        using var activity = MonitorService.ActivitySource.StartActivity();
+        
         if (draft == null)
         {
             return BadRequest();
@@ -25,6 +28,8 @@ public class DraftsController(IDraftService draftService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<Draft>>> GetDrafts(CancellationToken ct = default)
     {
+        using var activity = MonitorService.ActivitySource.StartActivity();
+        
         var drafts = await draftService.GetAsync(ct);
         return Ok(drafts);
     }
