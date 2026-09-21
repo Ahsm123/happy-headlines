@@ -1,9 +1,11 @@
-﻿FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
-COPY ProfanityService.csproj .
-RUN dotnet restore
-COPY . .
-RUN dotnet publish -c Release -o /app
+COPY src/ProfanityService/ProfanityService.csproj src/ProfanityService/
+COPY src/ServiceDefaults/ServiceDefaults.csproj src/ServiceDefaults/
+RUN dotnet restore src/ProfanityService/ProfanityService.csproj
+COPY src/ProfanityService/ src/ProfanityService/
+COPY src/ServiceDefaults/ src/ServiceDefaults/
+RUN dotnet publish src/ProfanityService/ProfanityService.csproj -c Release -o /app
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app

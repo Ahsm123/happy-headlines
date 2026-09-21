@@ -7,5 +7,6 @@
     <Project Path="src/CommentService/CommentService.csproj" />
     <Project Path="src/DraftService/DraftService.csproj" />
     <Project Path="src/ProfanityService/ProfanityService.csproj" />
+    <Project Path="src/ServiceDefaults/ServiceDefaults.csproj" />
   </Folder>
 </Solution>
