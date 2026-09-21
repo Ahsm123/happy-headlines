@@ -109,6 +109,7 @@
       dockerfile: src/ArticleService/Dockerfile
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      SEQ_URL: http://seq:5341
     depends_on:
       global-db:
         condition: service_healthy
@@ -148,6 +149,7 @@
       - "8081:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      SEQ_URL: http://seq:5341
     depends_on:
       comment-db:
         condition: service_healthy
@@ -173,6 +175,7 @@
       - "8082:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      SEQ_URL: http://seq:5341
     depends_on:
       profanity-db:
         condition: service_healthy
@@ -198,6 +201,7 @@
       - "8083:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      SEQ_URL: http://seq:5341
     depends_on:
       profanity-db:
         condition: service_healthy
@@ -214,6 +218,16 @@
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
       retries: 10
+      
+  seq:
+    image: datalust/seq
+    ports:
+      - "5341:5341"
+      - "5342:80"
+    volumes:
+      - rps-seq-data:/data
+    environment:
+      - ACCEPT_EULA=Y
   
   
 
@@ -229,4 +243,5 @@ volumes:
   comment-db-data:
   profanity-db-data:
   draft-db-data:
+  rps-seq-data:
 
