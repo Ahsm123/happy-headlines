@@ -1,7 +1,7 @@
 using ServiceDefaults;
 using ServiceDefaults.Contracts;
 
-namespace ArticleService;
+namespace ArticleService.Workers;
 
 public class ArticlesWorker(IMessageClient messageClient) : BackgroundService
 {

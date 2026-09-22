@@ -1,5 +1,5 @@
-using ArticleService;
 using ArticleService.Data;
+using ArticleService.Workers;
 using EasyNetQ;
 using Microsoft.EntityFrameworkCore;
 using ServiceDefaults;
