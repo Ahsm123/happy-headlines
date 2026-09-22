@@ -1,6 +1,5 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -12,27 +11,27 @@ namespace ArticleService.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<Guid>(
+            // int identity -> uuid is not a cast; the column is dropped and recreated.
+            migrationBuilder.DropPrimaryKey(name: "PK_Articles", table: "Articles");
+            migrationBuilder.DropColumn(name: "Id", table: "Articles");
+            migrationBuilder.AddColumn<Guid>(
                 name: "Id",
                 table: "Articles",
                 type: "uuid",
                 nullable: false,
-                oldClrType: typeof(int),
-                oldType: "integer")
-                .OldAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+                defaultValueSql: "gen_random_uuid()");
+            migrationBuilder.AddPrimaryKey(name: "PK_Articles", table: "Articles", column: "Id");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<int>(
-                name: "Id",
-                table: "Articles",
-                type: "integer",
-                nullable: false,
-                oldClrType: typeof(Guid),
-                oldType: "uuid")
-                .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+            migrationBuilder.DropPrimaryKey(name: "PK_Articles", table: "Articles");
+            migrationBuilder.DropColumn(name: "Id", table: "Articles");
+            migrationBuilder.AddColumn<int>(name: "Id", table: "Articles", type: "integer", nullable: false)
+                .Annotation("Npgsql:ValueGenerationStrategy",
+                    Npgsql.EntityFrameworkCore.PostgreSQL.Metadata.NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+            migrationBuilder.AddPrimaryKey(name: "PK_Articles", table: "Articles", column: "Id");
         }
     }
 }
