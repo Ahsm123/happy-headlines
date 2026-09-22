@@ -1,5 +1,6 @@
 using ArticleService.Models;
 using Microsoft.EntityFrameworkCore;
+using ServiceDefaults.Contracts;
 
 namespace ArticleService.Data;
 

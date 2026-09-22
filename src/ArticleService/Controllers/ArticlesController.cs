@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ArticleService.Models;
 using ArticleService.Data;
+using ServiceDefaults.Contracts;
 
 namespace ArticleService.Controllers;
 

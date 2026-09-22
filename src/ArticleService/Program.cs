@@ -1,6 +1,6 @@
 using ArticleService.Data;
-using ArticleService.Models;
 using Microsoft.EntityFrameworkCore;
+using ServiceDefaults.Contracts;
 
 var builder = WebApplication.CreateBuilder(args);
 

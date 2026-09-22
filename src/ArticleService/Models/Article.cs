@@ -1,20 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using ServiceDefaults.Contracts;
 
 namespace ArticleService.Models;
 
-[JsonConverter(typeof(JsonStringEnumConverter<Region>))]
-public enum Region
-{
-    Africa,
-    Antarctica,
-    Asia,
-    Europe,
-    Global,
-    NorthAmerica,
-    Oceania,
-    SouthAmerica
-}
 public class Article
 {
     public Guid Id {get; set;}
