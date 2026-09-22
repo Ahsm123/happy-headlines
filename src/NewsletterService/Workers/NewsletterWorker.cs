@@ -1,7 +1,7 @@
 using ServiceDefaults;
 using ServiceDefaults.Contracts;
 
-namespace NewsletterService;
+namespace NewsletterService.Workers;
 
 public class NewsletterWorker(IMessageClient messageClient) : BackgroundService
 {
@@ -12,7 +12,7 @@ public class NewsletterWorker(IMessageClient messageClient) : BackgroundService
 
     private Task SendImmediateNewsletter(ArticleMessage articleMessage)
     {
-        MonitorService.Log.Here().Information("Received message and executed handler");
+        MonitorService.Log.Here().Information("NewsletterWorker receivedMessage");
         return Task.CompletedTask;
     }
 }   

@@ -1,5 +1,6 @@
 using EasyNetQ;
 using NewsletterService;
+using NewsletterService.Workers;
 using ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +10,7 @@ var connectionString = "host=rabbitmq;username=kalo;password=kalo";
 builder.Services.AddEasyNetQ(connectionString);
 builder.Services.AddSingleton<IMessageClient, MessageClient>();
 builder.Services.AddHostedService<NewsletterWorker>();
+
 
 var app = builder.Build();
 
