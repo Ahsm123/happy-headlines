@@ -1,4 +1,4 @@
-﻿namespace ArticleService.Models;
+﻿namespace ServiceDefaults.Contracts;
 
 public class ArticleDto
 {
