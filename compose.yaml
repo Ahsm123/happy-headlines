@@ -229,7 +229,19 @@
       Zipkin__Endpoint: http://zipkin:9411/api/v2/spans
     depends_on:
       rabbitmq:
-        condition: service_healthy    
+        condition: service_healthy
+  
+  newsletter-service:
+    build:
+      context: .
+      dockerfile: src/NewsletterService/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      Seq__ServerUrl: http://seq:5341
+      Zipkin__Endpoint: http://zipkin:9411/api/v2/spans
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
         
   seq:
     image: datalust/seq
@@ -240,7 +252,7 @@
       - rps-seq-data:/data
     environment:
       - ACCEPT_EULA=Y
-  
+      - SEQ_FIRSTRUN_NOAUTHENTICATION=true
   zipkin:
     image: openzipkin/zipkin
     ports:
