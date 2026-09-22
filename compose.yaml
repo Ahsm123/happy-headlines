@@ -217,6 +217,20 @@
       interval: 5s
       retries: 10
       
+  publisher-service:
+    build:
+      context: .
+      dockerfile: src/PublisherService/Dockerfile
+    ports:
+      - "8084:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      Seq__ServerUrl: http://seq:5341
+      Zipkin__Endpoint: http://zipkin:9411/api/v2/spans
+    depends_on:
+      rabbitmq:
+        condition: service_healthy    
+        
   seq:
     image: datalust/seq
     ports:
@@ -259,6 +273,10 @@
     volumes:
       - rabbitmq-lib:/var/lib/rabbitmq/
       - rabbitmq-log:/var/log/rabbitmq
+    healthcheck:
+      test: [ "CMD-SHELL", "rabbitmq-diagnostics ping" ]
+      interval: 5s
+      retries: 10
 
 volumes:
   global-db-data:
