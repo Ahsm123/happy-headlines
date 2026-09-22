@@ -1,4 +1,4 @@
-﻿services:
+services:
   global-db:
     image: postgres:17
     environment:
@@ -109,6 +109,8 @@
       dockerfile: src/ArticleService/Dockerfile
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      Seq__ServerUrl: http://seq:5341
+      Zipkin__Endpoint: http://zipkin:9411/api/v2/spans
     depends_on:
       global-db:
         condition: service_healthy
@@ -148,6 +150,8 @@
       - "8081:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      Seq__ServerUrl: http://seq:5341
+      Zipkin__Endpoint: http://zipkin:9411/api/v2/spans
     depends_on:
       comment-db:
         condition: service_healthy
@@ -173,6 +177,8 @@
       - "8082:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      Seq__ServerUrl: http://seq:5341
+      Zipkin__Endpoint: http://zipkin:9411/api/v2/spans
     depends_on:
       profanity-db:
         condition: service_healthy
