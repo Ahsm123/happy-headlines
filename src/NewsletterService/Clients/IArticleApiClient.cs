@@ -2,7 +2,7 @@
 
 namespace NewsletterService.Clients;
 
-public interface IArticleClient
+public interface IArticleApiClient
 {
-    Task<List<ArticleDto>> GetTodaysArticles(Region region, DateTime? fromDate);
+    Task<List<ArticleDto>> GetTodaysArticles(Region region);
 }

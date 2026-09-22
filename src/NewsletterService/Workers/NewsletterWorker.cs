@@ -1,18 +1,23 @@
+using NewsletterService.Clients;
 using ServiceDefaults;
 using ServiceDefaults.Contracts;
 
 namespace NewsletterService.Workers;
 
-public class NewsletterWorker(IMessageClient messageClient) : BackgroundService
+public class NewsletterWorker(
+    IMessageClient messageClient,
+    IArticleApiClient articleApiClient,
+    ISubscriberClient subscriberClient
+    ) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken ct)
     {
         await messageClient.SubscribeAsync<ArticleMessage>("NewsletterWorker", SendImmediateNewsletter, ct);
     }
 
-    private Task SendImmediateNewsletter(ArticleMessage articleMessage)
+    private async Task SendImmediateNewsletter(ArticleMessage articleMessage)
     {
         MonitorService.Log.Here().Information("NewsletterWorker receivedMessage");
-        return Task.CompletedTask;
+        var subs = await subscriberClient.GetSubscriberEmails();
     }
 }   

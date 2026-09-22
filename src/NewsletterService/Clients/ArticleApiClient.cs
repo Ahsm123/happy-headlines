@@ -2,11 +2,11 @@
 
 namespace NewsletterService.Clients;
 
-public class ArticleApiApiClient : IArticleApiClient
+public class ArticleApiClient : IArticleApiClient
 {
     private readonly HttpClient _httpClient;
     
-    public ArticleApiApiClient(HttpClient httpClient)
+    public ArticleApiClient(HttpClient httpClient)
     {
         _httpClient = httpClient;
     }
