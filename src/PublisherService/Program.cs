@@ -2,6 +2,8 @@ using EasyNetQ;
 using Scalar.AspNetCore;
 using ServiceDefaults;
 
+_ = MonitorService.TracerProvider;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.

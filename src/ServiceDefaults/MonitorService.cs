@@ -32,6 +32,8 @@ public static class MonitorService
         TracerProvider = Sdk.CreateTracerProviderBuilder()
             .AddZipkinExporter(o => o.Endpoint = new Uri(zipkinEndpoint))
             .AddSource(ActivitySource.Name)
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
             .SetResourceBuilder((ResourceBuilder.CreateDefault().AddService(ServiceName)))
             .Build();
         

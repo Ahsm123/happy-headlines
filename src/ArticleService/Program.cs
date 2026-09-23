@@ -2,8 +2,11 @@ using ArticleService.Data;
 using ArticleService.Workers;
 using EasyNetQ;
 using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
 using ServiceDefaults;
 using ServiceDefaults.Contracts;
+
+_ = MonitorService.TracerProvider;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +35,7 @@ app.MapGet("/whoami", () => Environment.MachineName);
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 app.MapControllers();
