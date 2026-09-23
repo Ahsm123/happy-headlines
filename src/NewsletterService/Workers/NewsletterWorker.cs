@@ -8,12 +8,12 @@ public class NewsletterWorker(
     IMessageClient messageClient,
     IArticleApiClient articleApiClient,
     ISubscriberClient subscriberClient
-    ) : BackgroundService
+) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken ct)
     {
         await messageClient.SubscribeAsync<ArticleMessage>("NewsletterWorker", SendImmediateNewsletter, ct);
-        
+
         while (!ct.IsCancellationRequested)
         {
             await Task.Delay(TimeSpan.FromHours(24), ct);
@@ -25,9 +25,13 @@ public class NewsletterWorker(
     {
         MonitorService.Log.Here().Information("NewsletterWorker receivedMessage");
         var subs = await subscriberClient.GetSubscriberEmails();
-        foreach (var email in subs)
+        foreach (var sub in subs)
         {
-            MonitorService.Log.Here().Information("Sending article {articleTitle} to {subscriberEmail}", email, articleMessage.Title);
+            if (sub.Region == articleMessage.Region)
+            {
+                MonitorService.Log.Here().Information("Sending article {articleTitle} to {subscriberEmail}", sub.Email,
+                    articleMessage.Title);
+            }
         }
     }
 
@@ -38,13 +42,15 @@ public class NewsletterWorker(
         {
             var regionalArticles = await articleApiClient.GetTodaysArticles(region);
             articles.AddRange(regionalArticles);
-            MonitorService.Log.Here().Information("Fetched: {articleCount} articles from {region}", regionalArticles.Count, region);
+            MonitorService.Log.Here().Information("Fetched: {articleCount} articles from {region}",
+                regionalArticles.Count, region);
         }
-        
+
         var subs = await subscriberClient.GetSubscriberEmails();
-        foreach (var email in subs)
+        foreach (var sub in subs)
         {
-            MonitorService.Log.Here().Information("Email sent to: {subscriberEmail}", email);
+            var articlesForSub = articles.Where(a => a.Region == sub.Region).ToList();
+            MonitorService.Log.Here().Information("Sent {articleCount} articles to {subscriberEmail}", articlesForSub.Count, sub.Email);
         }
     }
-}   
+}

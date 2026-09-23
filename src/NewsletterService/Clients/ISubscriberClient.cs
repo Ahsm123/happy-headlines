@@ -1,7 +1,9 @@
+using ServiceDefaults.Contracts;
+
 namespace NewsletterService.Clients;
 
 public interface ISubscriberClient
 {
-    Task<List<string>> GetSubscriberEmails();
+    Task<List<SubscriberDto>> GetSubscriberEmails();
     
 }

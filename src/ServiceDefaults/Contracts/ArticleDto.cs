@@ -7,4 +7,5 @@ public class ArticleDto
     public required string Content { get; set; }
     public required string Author { get; set; }
     public DateTime PublishDate { get; set; }
+    public Region Region { get; set; }
 }

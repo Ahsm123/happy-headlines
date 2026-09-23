@@ -104,7 +104,8 @@ public class ArticlesController(Coordinator coordinator) : ControllerBase
             Author = a.Author,
             Content = a.Content,
             PublishDate = a.PublishDate,
-            Title = a.Title
+            Title = a.Title,
+            Region = a.Region
         };
         
         return articleDto;
