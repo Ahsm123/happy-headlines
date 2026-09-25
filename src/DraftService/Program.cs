@@ -22,6 +22,8 @@ using (var scope = app.Services.CreateScope())
 
 app.MapGet("/health", () => Results.Ok());
 
+app.MapGet("/whoami", () => Environment.MachineName);
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
