@@ -22,7 +22,7 @@ public class ArticlesController(Coordinator coordinator) : ControllerBase
         db.Articles.Add(a);
         await db.SaveChangesAsync();
         var dto = ConvertToDto(a);
-        
+
         return CreatedAtAction(nameof(GetArticle), new { region, id = dto.Id }, dto);
     }
 
@@ -30,13 +30,13 @@ public class ArticlesController(Coordinator coordinator) : ControllerBase
     public async Task<ActionResult<ArticleDto>> GetArticle(Guid id, Region region)
     {
         await using var db = coordinator.GetArticleDbContext(region);
-        
+
         var article = await db.Articles.FindAsync(id);
         if (article == null)
         {
             return NotFound();
         }
-        
+
         return Ok(ConvertToDto(article));
     }
 
@@ -61,8 +61,13 @@ public class ArticlesController(Coordinator coordinator) : ControllerBase
     [HttpPut("{id:Guid}")]
     public async Task<IActionResult> UpdateArticle(Guid id, Region region, Article a)
     {
+        if (region != a.Region)
+        {
+            return BadRequest("Region mismatch");
+        }
+
         await using var db = coordinator.GetArticleDbContext(region);
-        
+
         var existing = await db.Articles.FindAsync(id);
         if (existing == null)
         {
@@ -83,7 +88,7 @@ public class ArticlesController(Coordinator coordinator) : ControllerBase
     public async Task<IActionResult> DeleteArticle(Guid id, Region region)
     {
         await using var db = coordinator.GetArticleDbContext(region);
-        
+
         var article = await db.Articles.FindAsync(id);
         if (article == null)
         {
@@ -107,9 +112,7 @@ public class ArticlesController(Coordinator coordinator) : ControllerBase
             Title = a.Title,
             Region = a.Region
         };
-        
+
         return articleDto;
     }
-
-
 }
