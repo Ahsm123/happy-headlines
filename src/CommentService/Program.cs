@@ -18,7 +18,7 @@ var circuitBreakerPolicy = HttpPolicyExtensions
 
 // Add services to the container.
 builder.Services.AddDbContext<CommentDbContext>(options => options
-        .UseNpgsql(builder.Configuration.GetConnectionString("CommentDbConnection")));
+    .UseNpgsql(builder.Configuration.GetConnectionString("CommentDbConnection")));
 
 builder.Services.AddHttpClient<IProfanityClient, ProfanityClient>(c =>
         c.BaseAddress = new Uri(builder.Configuration["Apis:ProfanityApi"] ??
