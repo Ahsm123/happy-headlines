@@ -1,8 +1,7 @@
 using EasyNetQ;
 using Scalar.AspNetCore;
 using ServiceDefaults;
-
-_ = MonitorService.TracerProvider;
+using ServiceDefaults.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +13,7 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+app.UseServiceDefaults();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -21,9 +21,6 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
-
-app.MapGet("/health", () => Results.Ok());
-app.MapGet("/whoami", () => Environment.MachineName);
 
 app.UseHttpsRedirection();
 app.MapControllers();

@@ -3,6 +3,7 @@ using NewsletterService;
 using NewsletterService.Clients;
 using NewsletterService.Workers;
 using ServiceDefaults;
+using ServiceDefaults.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,12 +19,8 @@ builder.Services.AddHttpClient<IArticleApiClient, ArticleApiClient>(client =>
 builder.Services.AddSingleton<ISubscriberClient, SubscriberClient>();
 builder.Services.AddHostedService<NewsletterWorker>();
 
-
-
 var app = builder.Build();
-
-app.MapGet("/health", () => Results.Ok());
-app.MapGet("/whoami", () => Environment.MachineName);
+app.UseServiceDefaults();
 
 app.UseHttpsRedirection();
 app.Run();
