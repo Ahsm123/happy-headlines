@@ -29,7 +29,7 @@ public class NewsletterWorker(
         {
             if (sub.Region == articleMessage.Region)
             {
-                MonitorService.Log.Here().Information("Sending article {articleTitle} to {subscriberEmail}",
+                MonitorService.Log.Here().Information("Sending article {ArticleTitle} to {SubscriberEmail}",
                     articleMessage.Title, sub.Email);
             }
         }
@@ -42,7 +42,7 @@ public class NewsletterWorker(
         {
             var regionalArticles = await articleApiClient.GetTodaysArticles(region);
             articles.AddRange(regionalArticles);
-            MonitorService.Log.Here().Information("Fetched: {articleCount} articles from {region}",
+            MonitorService.Log.Here().Information("Fetched: {ArticleCount} articles from {Region}",
                 regionalArticles.Count, region);
         }
 
@@ -50,7 +50,7 @@ public class NewsletterWorker(
         foreach (var sub in subs)
         {
             var articlesForSub = articles.Where(a => a.Region == sub.Region).ToList();
-            MonitorService.Log.Here().Information("Sent {articleCount} articles to {subscriberEmail}", articlesForSub.Count, sub.Email);
+            MonitorService.Log.Here().Information("Sent {ArticleCount} articles to {SubscriberEmail}", articlesForSub.Count, sub.Email);
         }
     }
 }
