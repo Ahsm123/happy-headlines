@@ -1,4 +1,5 @@
 using NewsletterService.Clients;
+using Polly.CircuitBreaker;
 using ServiceDefaults;
 using ServiceDefaults.Contracts;
 
@@ -47,7 +48,7 @@ public class NewsletterWorker(
                 MonitorService.Log.Here().Information("Fetched: {ArticleCount} articles from {Region}",
                     regionalArticles.Count, region);
             }
-            catch (HttpRequestException ex)
+            catch (Exception ex) when (ex is BrokenCircuitException or HttpRequestException)
             {
                 MonitorService.Log.Here().Warning(ex, "Failed to fetch articles from {Region}", region);
             }
