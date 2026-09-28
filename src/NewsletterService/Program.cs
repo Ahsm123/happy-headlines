@@ -22,6 +22,4 @@ builder.Services.AddHostedService<NewsletterWorker>();
 
 var app = builder.Build();
 app.UseServiceDefaults();
-
-app.UseHttpsRedirection();
 app.Run();
