@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using ArticleService.Models;
 using ArticleService.Data;
 using Microsoft.EntityFrameworkCore;
+using ServiceDefaults;
 using ServiceDefaults.Contracts;
 
 namespace ArticleService.Controllers;
@@ -21,6 +22,9 @@ public class ArticlesController(Coordinator coordinator) : ControllerBase
         await using var db = coordinator.GetArticleDbContext(region);
         db.Articles.Add(a);
         await db.SaveChangesAsync();
+
+        MonitorService.Log.Here().Information("Created article with ID: {ArticleId} in {Region}", a.Id, region);
+
         var dto = ConvertToDto(a);
 
         return CreatedAtAction(nameof(GetArticle), new { region, id = dto.Id }, dto);
@@ -80,6 +84,7 @@ public class ArticlesController(Coordinator coordinator) : ControllerBase
         existing.PublishDate = a.PublishDate;
 
         await db.SaveChangesAsync();
+        MonitorService.Log.Here().Information("Updated article with ID: {ArticleId} in {Region}", existing.Id, region);
 
         return NoContent();
     }
@@ -97,6 +102,7 @@ public class ArticlesController(Coordinator coordinator) : ControllerBase
 
         db.Articles.Remove(article);
         await db.SaveChangesAsync();
+        MonitorService.Log.Here().Information("Deleted article with ID: {ArticleId} in {Region}", article.Id, region);
 
         return NoContent();
     }

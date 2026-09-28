@@ -26,11 +26,14 @@ public class CommentsController(
         catch (Exception ex) when (ex is BrokenCircuitException or HttpRequestException)
         {
             comment.IsFiltered = false;
-            MonitorService.Log.Here().Warning(ex, "ProfanityService unavailable, saving unfiltered comment for article {ArticleId}", comment.ArticleId);
+            MonitorService.Log.Here().Warning(ex,
+                "ProfanityService unavailable, saving unfiltered comment for article {ArticleId}", comment.ArticleId);
         }
-        
+
         commentDbContext.Comments.Add(comment);
         await commentDbContext.SaveChangesAsync();
+        MonitorService.Log.Here().Information("Created comment with ID: {CommentId} on article: {ArticleId}",
+            comment.Id, comment.ArticleId);
 
         return CreatedAtAction(nameof(GetComment), new { id = comment.Id }, comment);
     }
@@ -46,12 +49,12 @@ public class CommentsController(
 
         return comment;
     }
-    
+
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Comment>>> GetComments([FromQuery, BindRequired] Guid article)
     {
-        return await commentDbContext.Comments                                                                                  
-            .Where(c => c.ArticleId == article)                                                                                 
+        return await commentDbContext.Comments
+            .Where(c => c.ArticleId == article)
             .ToListAsync();
     }
 }
