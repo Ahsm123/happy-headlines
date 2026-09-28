@@ -8,7 +8,7 @@ services:
     volumes:
       - global-db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
       retries: 10
 
@@ -21,7 +21,7 @@ services:
     volumes:
       - africa-db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
       retries: 10
 
@@ -34,7 +34,7 @@ services:
     volumes:
       - antarctica-db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
       retries: 10
 
@@ -47,7 +47,7 @@ services:
     volumes:
       - asia-db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
       retries: 10
 
@@ -60,7 +60,7 @@ services:
     volumes:
       - europe-db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
       retries: 10
 
@@ -73,7 +73,7 @@ services:
     volumes:
       - north-america-db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
       retries: 10
 
@@ -86,7 +86,7 @@ services:
     volumes:
       - oceania-db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
       retries: 10
 
@@ -99,7 +99,7 @@ services:
     volumes:
       - south-america-db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
       retries: 10
 
@@ -128,10 +128,10 @@ services:
         condition: service_healthy
       south-america-db:
         condition: service_healthy
-        
+  
   article-service-2: *article
   article-service-3: *article
-        
+  
   article-lb:
     image: nginx:alpine
     ports:
@@ -140,8 +140,10 @@ services:
       - ./nginx/article.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - article-service-1
-        
-        
+      - article-service-2
+      - article-service-3
+  
+  
   comment-service:
     build:
       context: .
@@ -153,6 +155,8 @@ services:
       Seq__ServerUrl: http://seq:5341
       Zipkin__Endpoint: http://zipkin:9411/api/v2/spans
     depends_on:
+      profanity-service:
+        condition: service_healthy
       comment-db:
         condition: service_healthy
 
@@ -195,7 +199,7 @@ services:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
       retries: 10
-      
+  
   draft-service:
     build:
       context: .
@@ -222,7 +226,7 @@ services:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
       retries: 10
-      
+  
   publisher-service:
     build:
       context: .
@@ -246,9 +250,11 @@ services:
       Seq__ServerUrl: http://seq:5341
       Zipkin__Endpoint: http://zipkin:9411/api/v2/spans
     depends_on:
+      article-lb:
+        condition: service_healthy
       rabbitmq:
         condition: service_healthy
-        
+  
   seq:
     image: datalust/seq
     ports:
