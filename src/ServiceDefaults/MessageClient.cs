@@ -47,16 +47,30 @@ public class MessageClient(IAdvancedBus bus) : IMessageClient
             var message = JsonSerializer.Deserialize<T>(body.Span)!;
 
             var hasActivity = properties.Headers.TryGetValue("Activity-Id", out var parentId);
-            
+
             var encoder = Encoding.UTF8;
-            string activityIdStr = parentId is byte[] bytes ? encoder.GetString(bytes) : parentId?.ToString() ?? string.Empty;
-            
-            using var activity = MonitorService.ActivitySource.StartActivity("Consume", ActivityKind.Consumer, activityIdStr);
-            MonitorService.Log.Here().Information("{type}", activityIdStr);
+            string activityIdStr = parentId is byte[] bytes
+                ? encoder.GetString(bytes)
+                : parentId?.ToString() ?? string.Empty;
+
+            using var activity =
+                MonitorService.ActivitySource.StartActivity("Consume", ActivityKind.Consumer, activityIdStr);
+            MonitorService.Log.Here().Information("Consuming {MessageType} from {Queue}", typeof(T).Name, queue);
+
+            try
+            {
+                await handler(message);
+            }
+            catch (Exception ex)
+            {
+                MonitorService.Log.Here()
+                    .Error(ex, "Failed to handle {MessageType} from {Queue}", typeof(T).Name, queue);
+                throw;
+            }
 
             await handler(message);
         });
-        
+
         _subscriptions[subscriberId] = handle;
     }
 
