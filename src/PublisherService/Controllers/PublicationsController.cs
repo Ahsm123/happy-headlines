@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using PublisherService.Contracts;
 using ServiceDefaults;
 using ServiceDefaults.Contracts;
 
