@@ -19,7 +19,7 @@ public class DraftManager(DraftDbContext db) : IDraftService
         return draft;
     }
 
-    public async Task<IEnumerable<Draft>> GetAsync(CancellationToken ct = default)
+    public async Task<IEnumerable<Draft>> GetAllAsync(CancellationToken ct = default)
     {
         using var activity = MonitorService.ActivitySource.StartActivity();
         
@@ -27,4 +27,7 @@ public class DraftManager(DraftDbContext db) : IDraftService
         MonitorService.Log.Here().Information("Retrieved {DraftCount} drafts", drafts.Count);
         return drafts;
     }
+
+    public async Task<Draft?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
+        await db.Drafts.FindAsync([id], ct);
 }
