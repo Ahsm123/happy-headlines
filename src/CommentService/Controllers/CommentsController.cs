@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using Polly.CircuitBreaker;
+using ServiceDefaults;
 
 namespace CommentService.Controllers;
 
@@ -22,9 +23,10 @@ public class CommentsController(
             comment.CommentText = await profanityClient.FilterAsync(comment.CommentText);
             comment.IsFiltered = true;
         }
-        catch (BrokenCircuitException)
+        catch (Exception ex) when (ex is BrokenCircuitException or HttpRequestException)
         {
             comment.IsFiltered = false;
+            MonitorService.Log.Here().Warning(ex, "ProfanityService unavailable, saving unfiltered comment for article {ArticleId}", comment.ArticleId);
         }
         
         commentDbContext.Comments.Add(comment);
