@@ -2,6 +2,8 @@ using CommentService.Clients;
 using CommentService.Data;
 using CommentService.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.EntityFrameworkCore;
 using Polly.CircuitBreaker;
 
 namespace CommentService.Controllers;
@@ -41,5 +43,13 @@ public class CommentsController(
         }
 
         return comment;
+    }
+    
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<Comment>>> GetComments([FromQuery, BindRequired] Guid article)
+    {
+        return await commentDbContext.Comments                                                                                  
+            .Where(c => c.ArticleId == article)                                                                                 
+            .ToListAsync();
     }
 }
