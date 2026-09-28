@@ -21,7 +21,8 @@ builder.Services.AddDbContext<CommentDbContext>(options => options
         .UseNpgsql(builder.Configuration.GetConnectionString("CommentDbConnection")));
 
 builder.Services.AddHttpClient<IProfanityClient, ProfanityClient>(c =>
-        c.BaseAddress = new Uri("http://profanity-service:8080"))
+        c.BaseAddress = new Uri(builder.Configuration["Apis:ProfanityApi"] ??
+                                throw new InvalidOperationException("Missing Apis:ProfanityApi")))
     .AddPolicyHandler(retryPolicy)
     .AddPolicyHandler(circuitBreakerPolicy);
 
