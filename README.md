@@ -30,3 +30,24 @@ docker compose up --build
 ## Diagrams
 
 C4 context and container diagrams are in `docs/diagrams/`.
+
+## Fetch and complete issues
+### Start
+- git switch main; git pull
+- gh issue list
+- gh issue edit N --add-assignee "@me"
+- gh issue develop N --checkout
+
+### Develop and commit
+- git add -A
+- git commit -m "feat: description (#N)"
+- git push
+
+### Pr + merge
+- gh pr create --fill --body "Fixed: N"
+- gh pr merge --squash --delete-branch
+- git switch main; git pull
+
+- Never commit to main
+- Powershell use quotes on "@me"
+- Use Fixed #N in pr to close issue automatically when merging
