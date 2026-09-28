@@ -29,8 +29,8 @@ public class NewsletterWorker(
         {
             if (sub.Region == articleMessage.Region)
             {
-                MonitorService.Log.Here().Information("Sending article {articleTitle} to {subscriberEmail}", sub.Email,
-                    articleMessage.Title);
+                MonitorService.Log.Here().Information("Sending article {articleTitle} to {subscriberEmail}",
+                    articleMessage.Title, sub.Email);
             }
         }
     }
