@@ -3,6 +3,7 @@ using Polly;
 using Polly.Extensions.Http;
 using Microsoft.EntityFrameworkCore;
 using CommentService.Data;
+using ServiceDefaults.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,16 +29,13 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+app.UseServiceDefaults();
 
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<CommentDbContext>();
     db.Database.Migrate();
 }
-
-app.MapGet("/health", () => Results.Ok());
-
-app.MapGet("/whoami", () => Environment.MachineName);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ProfanityService.Data;
+using ServiceDefaults.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,7 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+app.UseServiceDefaults();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -23,10 +25,6 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<ProfanityDbContext>();
     db.Database.Migrate();
 }
-
-app.MapGet("/health", () => Results.Ok());
-
-app.MapGet("/whoami", () => Environment.MachineName);
 
 app.MapControllers();
 
