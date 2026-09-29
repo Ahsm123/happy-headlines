@@ -31,8 +31,11 @@ builder.Services.AddHttpClient<IArticleClient, ArticleClient>(c =>
                             throw new InvalidOperationException("Missing Apis:ArticleApi")));
 
 // Add cache
-builder.Services.AddStackExchangeRedisCache(options => 
-    options.Configuration = builder.Configuration.GetConnectionString("Redis"));
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+    options.InstanceName = "CommentService";
+});
 
 builder.Services.AddScoped<CommentCache>();
     
