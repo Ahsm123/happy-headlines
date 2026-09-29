@@ -11,7 +11,7 @@ namespace ArticleService.Controllers;
 [Route("api/v1/regions/{region}/[controller]")]
 public class ArticlesController(Coordinator coordinator) : ControllerBase
 {
-    [HttpPost()]
+    [HttpPost]
     public async Task<ActionResult<ArticleDto>> CreateArticle(Region region, Article a)
     {
         if (region != a.Region)
@@ -105,6 +105,22 @@ public class ArticlesController(Coordinator coordinator) : ControllerBase
         MonitorService.Log.Here().Information("Deleted article with ID: {ArticleId} in {Region}", article.Id, region);
 
         return NoContent();
+    }
+
+    [HttpGet]
+    [Route("/api/v1/newest/[Controller]")]
+    public async Task<ActionResult<IEnumerable<ArticleDto>>> GetNewestArticles(int count)
+    {
+        var articles = new List<ArticleDto>();
+        foreach (var region in Enum.GetValues<Region>())
+        {
+            await using var db = coordinator.GetArticleDbContext(region);
+            var regionArticles = await db.Articles.ToListAsync();
+            articles.AddRange(regionArticles.Select(ConvertToDto));
+        }
+        
+        var newestArticles = articles.OrderByDescending(a => a.PublishDate).Take(count);
+        return Ok(newestArticles);
     }
 
     private ArticleDto ConvertToDto(Article a)
