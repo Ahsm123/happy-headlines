@@ -9,7 +9,9 @@ namespace ArticleService.Controllers;
 
 [ApiController]
 [Route("api/v1/regions/{region}/[controller]")]
-public class ArticlesController(Coordinator coordinator) : ControllerBase
+public class ArticlesController(
+    Coordinator coordinator,
+    ArticleCache cache) : ControllerBase
 {
     [HttpPost]
     public async Task<ActionResult<ArticleDto>> CreateArticle(Region region, Article a)
@@ -33,9 +35,7 @@ public class ArticlesController(Coordinator coordinator) : ControllerBase
     [HttpGet("{id:Guid}")]
     public async Task<ActionResult<ArticleDto>> GetArticle(Guid id, Region region)
     {
-        await using var db = coordinator.GetArticleDbContext(region);
-
-        var article = await db.Articles.FindAsync(id);
+        var article = await cache.GetArticle(id, region);
         if (article == null)
         {
             return NotFound();
@@ -118,7 +118,7 @@ public class ArticlesController(Coordinator coordinator) : ControllerBase
             var regionArticles = await db.Articles.ToListAsync();
             articles.AddRange(regionArticles.Select(ConvertToDto));
         }
-        
+
         var newestArticles = articles.OrderByDescending(a => a.PublishDate).Take(count);
         return Ok(newestArticles);
     }
