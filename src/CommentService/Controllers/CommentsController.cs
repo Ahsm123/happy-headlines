@@ -3,7 +3,6 @@ using CommentService.Data;
 using CommentService.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.EntityFrameworkCore;
 using Polly.CircuitBreaker;
 using ServiceDefaults;
 
@@ -13,7 +12,8 @@ namespace CommentService.Controllers;
 [Route("api/v1/[controller]")]
 public class CommentsController(
     IProfanityClient profanityClient,
-    CommentDbContext commentDbContext) : ControllerBase
+    CommentDbContext commentDbContext,
+    CommentCache cache) : ControllerBase
 {
     [HttpPost]
     public async Task<ActionResult<Comment>> PostComment(Comment comment)
@@ -35,6 +35,8 @@ public class CommentsController(
         MonitorService.Log.Here().Information("Created comment with ID: {CommentId} on article: {ArticleId}",
             comment.Id, comment.ArticleId);
 
+        await cache.InvalidateCacheEntry(comment.ArticleId);
+
         return CreatedAtAction(nameof(GetComment), new { id = comment.Id }, comment);
     }
 
@@ -51,10 +53,8 @@ public class CommentsController(
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Comment>>> GetComments([FromQuery, BindRequired] Guid article)
+    public async Task<ActionResult<IEnumerable<Comment>>> GetComments([FromQuery, BindRequired] Guid articleId)
     {
-        return await commentDbContext.Comments
-            .Where(c => c.ArticleId == article)
-            .ToListAsync();
+        return await cache.Comments(articleId);
     }
 }

@@ -26,6 +26,16 @@ builder.Services.AddHttpClient<IProfanityClient, ProfanityClient>(c =>
     .AddPolicyHandler(retryPolicy)
     .AddPolicyHandler(circuitBreakerPolicy);
 
+builder.Services.AddHttpClient<IArticleClient, ArticleClient>(c =>
+    c.BaseAddress = new Uri(builder.Configuration["Apis:ArticleApi"] ??
+                            throw new InvalidOperationException("Missing Apis:ArticleApi")));
+
+// Add cache
+builder.Services.AddStackExchangeRedisCache(options => 
+    options.Configuration = builder.Configuration.GetConnectionString("Redis"));
+
+builder.Services.AddScoped<CommentCache>();
+    
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
