@@ -111,6 +111,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       Seq__ServerUrl: http://seq:5341
       Zipkin__Endpoint: http://zipkin:9411/api/v2/spans
+      ConnectionStrings__Redis: redis:6379,password=kalo
     depends_on:
       global-db:
         condition: service_healthy
@@ -128,6 +129,8 @@ services:
         condition: service_healthy
       south-america-db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
   
   article-service-2: *article
   article-service-3: *article
@@ -138,6 +141,10 @@ services:
       - "8080:80"
     volumes:
       - ./nginx/article.conf:/etc/nginx/nginx.conf:ro
+    healthcheck:
+      test: [ "CMD", "wget", "-q", "--spider", "http://127.0.0.1/health" ]
+      interval: 5s
+      retries: 10
     depends_on:
       - article-service-1
       - article-service-2
@@ -154,10 +161,13 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       Seq__ServerUrl: http://seq:5341
       Zipkin__Endpoint: http://zipkin:9411/api/v2/spans
+      ConnectionStrings__Redis: redis:6379,password=kalo
     depends_on:
       profanity-service:
         condition: service_healthy
       comment-db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
   comment-db:
@@ -255,6 +265,41 @@ services:
       rabbitmq:
         condition: service_healthy
   
+  redis:
+    image: redis:8-alpine
+    container_name: my-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass kalo
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-a", "kalo", "ping" ]
+      interval: 5s
+      retries: 10
+    restart: unless-stopped
+  
+  prometheus:
+    image: prom/prometheus:v3
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prom-data:/prometheus
+  
+  grafana:
+    image: grafana/grafana:13.2
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=grafana
+    volumes:
+      - ./grafana:/etc/grafana/provisioning/datasources
+  
   seq:
     image: datalust/seq
     ports:
@@ -318,4 +363,5 @@ volumes:
   zipkin-data:
   rabbitmq-lib:
   rabbitmq-log:
+  prom-data:
 
