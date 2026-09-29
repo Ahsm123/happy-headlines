@@ -11,4 +11,8 @@
     <Project Path="src/PublisherService/PublisherService.csproj" />
     <Project Path="src/ServiceDefaults/ServiceDefaults.csproj" />
   </Folder>
+  <Folder Name="/tests/" />
+  <Folder Name="/tests/CommentService.Tests/">
+    <Project Path="tests/CommentService.Tests/CommentService.Tests.csproj" />
+  </Folder>
 </Solution>
