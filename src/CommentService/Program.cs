@@ -4,6 +4,7 @@ using Polly.Extensions.Http;
 using Microsoft.EntityFrameworkCore;
 using CommentService.Data;
 using ServiceDefaults.Extensions;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,8 +38,11 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.InstanceName = "CommentService";
 });
 
+builder.Services.AddSingleton<IConnectionMultiplexer>(
+    ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")!));
+
 builder.Services.AddScoped<CommentCache>();
-    
+
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
@@ -56,6 +60,12 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+app.MapGet("/metrics/cache", async (CommentCache cache) =>
+{
+    var (hits, misses) = await cache.Stats();
+    return new { hits, misses };
+});
 
 app.MapControllers();
 

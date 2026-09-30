@@ -5,7 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using Moq;
 using ServiceDefaults.Contracts;
+using StackExchange.Redis;
 
 namespace CommentService.Tests;
 
@@ -16,7 +18,11 @@ public class CommentCacheTests
     private readonly CommentDbContext _db = new(new DbContextOptionsBuilder<CommentDbContext>()
         .UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
 
-    private CommentCache CreateCache(params Guid[] newestIds) => new(_redis, new FakeArticleClient(newestIds), _db);
+    private readonly Mock<IDatabase> _counters = new();
+
+    private CommentCache CreateCache(params Guid[] newestIds) =>
+        new(_redis, new FakeArticleClient(newestIds), _db,
+            Mock.Of<IConnectionMultiplexer>(m => m.GetDatabase(It.IsAny<int>(), It.IsAny<object>()) == _counters.Object));
 
     private async Task SeedComment()
     {
@@ -56,6 +62,19 @@ public class CommentCacheTests
         await cache.InvalidateCacheEntry(_articleId);
 
         Assert.Null(await _redis.GetStringAsync(_articleId.ToString()));
+    }
+
+    [Fact]
+    public async Task MissThenHit_IncrementsCounters()
+    {
+        await SeedComment();
+        var cache = CreateCache(_articleId);
+
+        await cache.Comments(_articleId);
+        await cache.Comments(_articleId);
+
+        _counters.Verify(d => d.StringIncrementAsync("CommentService:cache:misses", 1, CommandFlags.None), Times.Once);
+        _counters.Verify(d => d.StringIncrementAsync("CommentService:cache:hits", 1, CommandFlags.None), Times.Once);
     }
 
     private class FakeArticleClient(Guid[] ids) : IArticleClient
