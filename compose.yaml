@@ -131,6 +131,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
   
   article-service-2: *article
   article-service-3: *article
@@ -164,7 +166,7 @@ services:
       ConnectionStrings__Redis: redis:6379,password=kalo
     depends_on:
       profanity-service:
-        condition: service_healthy
+        condition: service_started
       comment-db:
         condition: service_healthy
       redis:
@@ -298,7 +300,7 @@ services:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=grafana
     volumes:
-      - ./grafana:/etc/grafana/provisioning/datasources
+      - ./grafana:/etc/grafana/provisioning
   
   seq:
     image: datalust/seq
