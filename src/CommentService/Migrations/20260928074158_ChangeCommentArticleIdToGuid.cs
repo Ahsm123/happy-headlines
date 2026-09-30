@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -8,28 +8,35 @@ namespace CommentService.Migrations
     /// <inheritdoc />
     public partial class ChangeCommentArticleIdToGuid : Migration
     {
+        // Postgres can't cast integer to uuid, so drop and re-add; old int ids can't reference Guid articles anyway
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<Guid>(
+            migrationBuilder.DropColumn(
+                name: "ArticleId",
+                table: "Comments");
+
+            migrationBuilder.AddColumn<Guid>(
                 name: "ArticleId",
                 table: "Comments",
                 type: "uuid",
                 nullable: false,
-                oldClrType: typeof(int),
-                oldType: "integer");
+                defaultValue: Guid.Empty);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<int>(
+            migrationBuilder.DropColumn(
+                name: "ArticleId",
+                table: "Comments");
+
+            migrationBuilder.AddColumn<int>(
                 name: "ArticleId",
                 table: "Comments",
                 type: "integer",
                 nullable: false,
-                oldClrType: typeof(Guid),
-                oldType: "uuid");
+                defaultValue: 0);
         }
     }
 }
