@@ -6,15 +6,29 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.OpenApi;
 using ServiceDefaults;
 using ServiceDefaults.Contracts;
+using StackExchange.Redis;
 
 namespace CommentService.Data;
 
 public class CommentCache(
     IDistributedCache cache,
     IArticleClient articleClient,
-    CommentDbContext dbContext)
+    CommentDbContext dbContext,
+    IConnectionMultiplexer redis)
 {
+    private const string HitsKey = "CommentService:cache:hits";
+    private const string MissesKey = "CommentService:cache:misses";
+
+    private Task OnCacheHit() => redis.GetDatabase().StringIncrementAsync(HitsKey);
+    private Task OnCacheMiss() => redis.GetDatabase().StringIncrementAsync(MissesKey);
+
     private readonly TimeSpan _expirationTime = TimeSpan.FromMinutes(10);
+
+    public async Task<(long Hits, long Misses)> Stats()
+    {
+        var db = redis.GetDatabase();
+        return ((long)await db.StringGetAsync(HitsKey), (long)await db.StringGetAsync(MissesKey));
+    }
 
     public async Task InvalidateCacheEntry(Guid articleId)
     {
@@ -26,6 +40,7 @@ public class CommentCache(
         var cacheHit = await cache.GetStringAsync(articleId.ToString());
         if (cacheHit is null)
         {
+            await OnCacheMiss();
             var fetchedComments = await dbContext.Comments
                 .Where(c => c.ArticleId == articleId)
                 .ToListAsync();
@@ -42,12 +57,14 @@ public class CommentCache(
             }
             catch (HttpRequestException)
             {
-                MonitorService.Log.Here().Warning("ArticleService unavailable, skipping cache for article {ArticleId}", articleId);
+                MonitorService.Log.Here().Warning("ArticleService unavailable, skipping cache for article {ArticleId}",
+                    articleId);
             }
 
             return fetchedComments;
         }
 
+        await OnCacheHit();
         return JsonSerializer.Deserialize<List<Comment>>(cacheHit);
     }
 
