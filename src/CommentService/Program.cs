@@ -3,6 +3,7 @@ using Polly;
 using Polly.Extensions.Http;
 using Microsoft.EntityFrameworkCore;
 using CommentService.Data;
+using Prometheus;
 using ServiceDefaults.Extensions;
 using StackExchange.Redis;
 
@@ -54,6 +55,17 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<CommentDbContext>();
     db.Database.Migrate();
 }
+
+var hitGauge = Metrics.CreateGauge("commentHits", "cache hits");
+var missGauge = Metrics.CreateGauge("commentMisses", "cache misses");
+Metrics.DefaultRegistry.AddBeforeCollectCallback(() =>
+{
+    using var scope = app.Services.CreateScope();
+    var cache = scope.ServiceProvider.GetRequiredService<CommentCache>();
+    var metrics = cache.Stats();
+    hitGauge.Set(metrics.Result.Hits);
+    missGauge.Set(metrics.Result.Misses);
+});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
