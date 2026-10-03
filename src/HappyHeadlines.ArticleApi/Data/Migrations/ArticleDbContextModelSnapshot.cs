@@ -10,7 +10,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace HappyHeadlines.ArticleApi.Migrations
+namespace HappyHeadlines.ArticleApi.Data.Migrations
 {
     [DbContext(typeof(ArticleDbContext))]
     partial class ArticleDbContextModelSnapshot : ModelSnapshot

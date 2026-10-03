@@ -1,10 +1,11 @@
 ﻿using System.Text.Json;
+using HappyHeadlines.ArticleApi.Data;
 using HappyHeadlines.ArticleApi.Models;
 using HappyHeadlines.Contracts.Articles;
 using Microsoft.Extensions.Caching.Distributed;
 using StackExchange.Redis;
 
-namespace HappyHeadlines.ArticleApi.Data;
+namespace HappyHeadlines.ArticleApi.Caching;
 
 public class ArticleCache(
     IDistributedCache cache,

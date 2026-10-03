@@ -2,6 +2,8 @@ using HappyHeadlines.Contracts.Articles;
 using Microsoft.AspNetCore.Mvc;
 using HappyHeadlines.ArticleApi.Models;
 using HappyHeadlines.ArticleApi.Data;
+using HappyHeadlines.ArticleApi.Caching;
+using HappyHeadlines.ArticleApi.Extensions;
 using Microsoft.EntityFrameworkCore;
 using HappyHeadlines.ServiceDefaults;
 
@@ -27,7 +29,7 @@ public class ArticlesController(
 
         MonitorService.Log.Here().Information("Created article with ID: {ArticleId} in {Region}", a.Id, region);
 
-        var dto = ConvertToDto(a);
+        var dto = a.ToDto();
 
         return CreatedAtAction(nameof(GetArticle), new { region, id = dto.Id }, dto);
     }
@@ -41,7 +43,7 @@ public class ArticlesController(
             return NotFound();
         }
 
-        return Ok(ConvertToDto(article));
+        return Ok(article.ToDto());
     }
 
     [HttpGet]
@@ -57,7 +59,7 @@ public class ArticlesController(
         }
 
         var articles = await query.ToListAsync();
-        var dtos = articles.Select(ConvertToDto).ToList();
+        var dtos = articles.Select(a => a.ToDto()).ToList();
 
         return Ok(dtos);
     }
@@ -116,25 +118,10 @@ public class ArticlesController(
         {
             await using var db = coordinator.GetArticleDbContext(region);
             var regionArticles = await db.Articles.ToListAsync();
-            articles.AddRange(regionArticles.Select(ConvertToDto));
+            articles.AddRange(regionArticles.Select(a => a.ToDto()));
         }
 
         var newestArticles = articles.OrderByDescending(a => a.PublishDate).Take(count);
         return Ok(newestArticles);
-    }
-
-    private ArticleDto ConvertToDto(Article a)
-    {
-        var articleDto = new ArticleDto
-        {
-            Id = a.Id,
-            Author = a.Author,
-            Content = a.Content,
-            PublishDate = a.PublishDate,
-            Title = a.Title,
-            Region = a.Region
-        };
-
-        return articleDto;
     }
 }

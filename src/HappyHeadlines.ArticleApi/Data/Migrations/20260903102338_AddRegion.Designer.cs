@@ -11,11 +11,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace HappyHeadlines.ArticleApi.Migrations
+namespace HappyHeadlines.ArticleApi.Data.Migrations
 {
     [DbContext(typeof(ArticleDbContext))]
-    [Migration("20260922105342_UpdateArticleId")]
-    partial class UpdateArticleId
+    [Migration("20260903102338_AddRegion")]
+    partial class AddRegion
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -29,9 +29,11 @@ namespace HappyHeadlines.ArticleApi.Migrations
 
             modelBuilder.Entity("HappyHeadlines.ArticleApi.Models.Article", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Author")
                         .IsRequired()

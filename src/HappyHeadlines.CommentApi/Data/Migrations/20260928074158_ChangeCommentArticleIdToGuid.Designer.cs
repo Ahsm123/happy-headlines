@@ -9,11 +9,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace HappyHeadlines.CommentApi.Migrations
+namespace HappyHeadlines.CommentApi.Data.Migrations
 {
     [DbContext(typeof(CommentDbContext))]
-    [Migration("20260910170538_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260928074158_ChangeCommentArticleIdToGuid")]
+    partial class ChangeCommentArticleIdToGuid
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -31,8 +31,8 @@ namespace HappyHeadlines.CommentApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int>("ArticleId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("ArticleId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("CommentText")
                         .IsRequired()

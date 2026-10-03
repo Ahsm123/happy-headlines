@@ -1,3 +1,4 @@
+using HappyHeadlines.CommentApi.Caching;
 using HappyHeadlines.CommentApi.Clients;
 using Polly;
 using Polly.Extensions.Http;

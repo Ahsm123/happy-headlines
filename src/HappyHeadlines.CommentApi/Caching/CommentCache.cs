@@ -1,5 +1,6 @@
 using System.Text.Json;
 using HappyHeadlines.CommentApi.Clients;
+using HappyHeadlines.CommentApi.Data;
 using HappyHeadlines.CommentApi.Models;
 using HappyHeadlines.ServiceDefaults;
 using Microsoft.EntityFrameworkCore;
@@ -7,7 +8,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.OpenApi;
 using StackExchange.Redis;
 
-namespace HappyHeadlines.CommentApi.Data;
+namespace HappyHeadlines.CommentApi.Caching;
 
 public class CommentCache(
     IDistributedCache cache,

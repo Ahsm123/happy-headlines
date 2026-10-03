@@ -5,7 +5,7 @@ using HappyHeadlines.Contracts.Events;
 using HappyHeadlines.ServiceDefaults;
 using Microsoft.EntityFrameworkCore;
 
-namespace HappyHeadlines.ArticleApi.Workers;
+namespace HappyHeadlines.ArticleApi.Messaging;
 
 public class ArticlesWorker(IMessageClient messageClient, Coordinator coordinator) : BackgroundService
 {

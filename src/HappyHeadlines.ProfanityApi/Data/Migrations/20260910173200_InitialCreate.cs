@@ -3,7 +3,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace HappyHeadlines.ProfanityApi.Migrations
+namespace HappyHeadlines.ProfanityApi.Data.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration

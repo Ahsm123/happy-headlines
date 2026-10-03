@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace HappyHeadlines.DraftApi.Migrations
+namespace HappyHeadlines.DraftApi.Data.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration

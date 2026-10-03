@@ -1,4 +1,5 @@
-﻿using HappyHeadlines.ArticleApi.Data;
+﻿using HappyHeadlines.ArticleApi.Caching;
+using HappyHeadlines.ArticleApi.Data;
 using HappyHeadlines.ArticleApi.Models;
 using HappyHeadlines.Contracts.Articles;
 using HappyHeadlines.ServiceDefaults;

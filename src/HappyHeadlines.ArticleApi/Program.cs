@@ -1,5 +1,7 @@
 using EasyNetQ;
+using HappyHeadlines.ArticleApi.Caching;
 using HappyHeadlines.ArticleApi.Data;
+using HappyHeadlines.ArticleApi.Messaging;
 using HappyHeadlines.ArticleApi.Workers;
 using HappyHeadlines.Contracts.Articles;
 using HappyHeadlines.ServiceDefaults.Extensions;

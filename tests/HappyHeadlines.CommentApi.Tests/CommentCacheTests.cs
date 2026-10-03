@@ -1,3 +1,4 @@
+using HappyHeadlines.CommentApi.Caching;
 using HappyHeadlines.CommentApi.Clients;
 using HappyHeadlines.CommentApi.Data;
 using HappyHeadlines.CommentApi.Models;

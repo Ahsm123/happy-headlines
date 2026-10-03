@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace HappyHeadlines.CommentApi.Migrations
+namespace HappyHeadlines.CommentApi.Data.Migrations
 {
     /// <inheritdoc />
     public partial class ChangeCommentArticleIdToGuid : Migration

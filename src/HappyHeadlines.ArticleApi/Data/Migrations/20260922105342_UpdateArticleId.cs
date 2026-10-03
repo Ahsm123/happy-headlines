@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace HappyHeadlines.ArticleApi.Migrations
+namespace HappyHeadlines.ArticleApi.Data.Migrations
 {
     /// <inheritdoc />
     public partial class UpdateArticleId : Migration
