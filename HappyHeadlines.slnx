@@ -3,16 +3,17 @@
     <File Path="compose.yaml" />
   </Folder>
   <Folder Name="/src/">
-    <Project Path="src/ArticleService/ArticleService.csproj" />
-    <Project Path="src/CommentService/CommentService.csproj" />
-    <Project Path="src/DraftService/DraftService.csproj" />
-    <Project Path="src/NewsletterService/NewsletterService.csproj" />
-    <Project Path="src/ProfanityService/ProfanityService.csproj" />
-    <Project Path="src/PublisherService/PublisherService.csproj" />
-    <Project Path="src/ServiceDefaults/ServiceDefaults.csproj" />
+    <Project Path="src/HappyHeadlines.CommentApi/HappyHeadlines.CommentApi.csproj" />
+    <Project Path="src/HappyHeadlines.NewsletterApi/HappyHeadlines.NewsletterApi.csproj" />
+    <Project Path="src/HappyHeadlines.ProfanityApi/HappyHeadlines.ProfanityApi.csproj" />
+    <Project Path="src/HappyHeadlines.PublisherApi/HappyHeadlines.PublisherApi.csproj" />
+    <Project Path="src/HappyHeadlines.Contracts/HappyHeadlines.Contracts.csproj" />
+    <Project Path="src/HappyHeadlines.ServiceDefaults/HappyHeadlines.ServiceDefaults.csproj" />
+    <Project Path="src/HappyHeadlines.ArticleApi/HappyHeadlines.ArticleApi.csproj" />
+    <Project Path="src/HappyHeadlines.DraftApi/HappyHeadlines.DraftApi.csproj" />
   </Folder>
   <Folder Name="/tests/" />
-  <Folder Name="/tests/CommentService.Tests/">
-    <Project Path="tests/CommentService.Tests/CommentService.Tests.csproj" />
+  <Folder Name="/tests/HappyHeadlines.CommentApi.Tests/">
+    <Project Path="tests/HappyHeadlines.CommentApi.Tests/HappyHeadlines.CommentApi.Tests.csproj" />
   </Folder>
 </Solution>

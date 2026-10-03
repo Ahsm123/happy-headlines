@@ -103,10 +103,10 @@ services:
       interval: 5s
       retries: 10
 
-  article-service-1: &article
+  article-api-1: &article
     build:
       context: .
-      dockerfile: src/ArticleService/Dockerfile
+      dockerfile: src/HappyHeadlines.ArticleApi/Dockerfile
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       Seq__ServerUrl: http://seq:5341
@@ -134,8 +134,8 @@ services:
       rabbitmq:
         condition: service_healthy
   
-  article-service-2: *article
-  article-service-3: *article
+  article-api-2: *article
+  article-api-3: *article
   
   article-lb:
     image: nginx:alpine
@@ -148,15 +148,15 @@ services:
       interval: 5s
       retries: 10
     depends_on:
-      - article-service-1
-      - article-service-2
-      - article-service-3
+      - article-api-1
+      - article-api-2
+      - article-api-3
   
   
-  comment-service:
+  comment-api:
     build:
       context: .
-      dockerfile: src/CommentService/Dockerfile
+      dockerfile: src/HappyHeadlines.CommentApi/Dockerfile
     ports:
       - "8081:8080"
     environment:
@@ -165,7 +165,7 @@ services:
       Zipkin__Endpoint: http://zipkin:9411/api/v2/spans
       ConnectionStrings__Redis: redis:6379,password=kalo
     depends_on:
-      profanity-service:
+      profanity-api:
         condition: service_started
       comment-db:
         condition: service_healthy
@@ -185,10 +185,10 @@ services:
       interval: 5s
       retries: 10
 
-  profanity-service:
+  profanity-api:
     build:
       context: .
-      dockerfile: src/ProfanityService/Dockerfile
+      dockerfile: src/HappyHeadlines.ProfanityApi/Dockerfile
     ports:
       - "8082:8080"
     environment:
@@ -212,10 +212,10 @@ services:
       interval: 5s
       retries: 10
   
-  draft-service:
+  draft-api:
     build:
       context: .
-      dockerfile: src/DraftService/Dockerfile
+      dockerfile: src/HappyHeadlines.DraftApi/Dockerfile
     ports:
       - "8083:8080"
     environment:
@@ -239,10 +239,10 @@ services:
       interval: 5s
       retries: 10
   
-  publisher-service:
+  publisher-api:
     build:
       context: .
-      dockerfile: src/PublisherService/Dockerfile
+      dockerfile: src/HappyHeadlines.PublisherApi/Dockerfile
     ports:
       - "8084:8080"
     environment:
@@ -253,10 +253,10 @@ services:
       rabbitmq:
         condition: service_healthy
   
-  newsletter-service:
+  newsletter-api:
     build:
       context: .
-      dockerfile: src/NewsletterService/Dockerfile
+      dockerfile: src/HappyHeadlines.NewsletterApi/Dockerfile
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       Seq__ServerUrl: http://seq:5341

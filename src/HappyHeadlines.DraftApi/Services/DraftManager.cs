@@ -1,0 +1,33 @@
+using HappyHeadlines.DraftApi.Data;
+using HappyHeadlines.DraftApi.Models;
+using Microsoft.EntityFrameworkCore;
+using HappyHeadlines.ServiceDefaults;
+
+namespace HappyHeadlines.DraftApi.Services;
+
+public class DraftManager(DraftDbContext db) : IDraftService
+{
+    public async Task<Draft> CreateAsync(Draft draft, CancellationToken ct = default)
+    {
+        using var activity = MonitorService.ActivitySource.StartActivity();
+        
+        MonitorService.Log.Here().Information("Creating draft titled {Title}", draft.Title);
+        draft.Created = draft.Updated = DateTime.UtcNow;
+        db.Drafts.Add(draft);
+        await db.SaveChangesAsync(ct);
+        MonitorService.Log.Here().Information("Created draft {DraftId} titled {Title}", draft.Id, draft.Title);
+        return draft;
+    }
+
+    public async Task<IEnumerable<Draft>> GetAllAsync(CancellationToken ct = default)
+    {
+        using var activity = MonitorService.ActivitySource.StartActivity();
+        
+        var drafts = await db.Drafts.ToListAsync(ct);
+        MonitorService.Log.Here().Information("Retrieved {DraftCount} drafts", drafts.Count);
+        return drafts;
+    }
+
+    public async Task<Draft?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
+        await db.Drafts.FindAsync([id], ct);
+}

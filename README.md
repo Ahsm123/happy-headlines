@@ -6,12 +6,12 @@ Microservice based news platform built with .NET and Docker Compose.
 
 | Service | Port | Description |
 |---|---|---|
-| ArticleService | 8080 (nginx LB) | Articles, sharded by continent behind nginx |
-| CommentService | 8081 | Comments, filtered through ProfanityService |
-| ProfanityService | 8082 | Profanity filter |
-| DraftService | 8083 | Article drafts |
-| PublisherService | 8084 | Publishes articles via RabbitMQ |
-| NewsletterService | – | Sends immediate and daily newsletters |
+| ArticleApi | 8080 (nginx LB) | Articles, sharded by continent behind nginx |
+| CommentApi | 8081 | Comments, filtered through ProfanityApi |
+| ProfanityApi | 8082 | Profanity filter |
+| DraftApi | 8083 | Article drafts |
+| PublisherApi | 8084 | Publishes articles via RabbitMQ |
+| NewsletterApi | – | Sends immediate and daily newsletters |
 
 Shared logging, tracing and messaging in `src/ServiceDefaults`.
 
