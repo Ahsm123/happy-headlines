@@ -68,7 +68,6 @@ public class MessageClient(IAdvancedBus bus) : IMessageClient
                 throw;
             }
 
-            await handler(message);
         });
 
         _subscriptions[subscriberId] = handle;
