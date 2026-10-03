@@ -14,13 +14,16 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
-app.UseServiceDefaults();
 
-using (var scope = app.Services.CreateScope())
+if (args.Contains("migrate"))
 {
+    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<DraftDbContext>();
     db.Database.Migrate();
+    return;
 }
+
+app.UseServiceDefaults();
 
 if (app.Environment.IsDevelopment())
 {

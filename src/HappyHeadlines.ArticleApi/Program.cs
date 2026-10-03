@@ -36,14 +36,19 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(
 builder.Services.AddSingleton<ArticleCache>();
 
 var app = builder.Build();
-app.UseServiceDefaults();
 
-var coordinator = app.Services.GetRequiredService<Coordinator>();
-foreach (Region region in Enum.GetValues<Region>())
+if (args.Contains("migrate"))
 {
-    using var db = coordinator.GetArticleDbContext(region);
-    db.Database.Migrate();
+    var coordinator = app.Services.GetRequiredService<Coordinator>();
+    foreach (var region in Enum.GetValues<Region>())
+    {
+        using var db = coordinator.GetArticleDbContext(region);
+        db.Database.Migrate();
+    }
+    return;
 }
+
+app.UseServiceDefaults();
 
 using (var scope = app.Services.CreateScope())
 {

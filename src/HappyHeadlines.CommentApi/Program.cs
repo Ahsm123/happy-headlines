@@ -49,13 +49,16 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
-app.UseServiceDefaults();
 
-using (var scope = app.Services.CreateScope())
+if (args.Contains("migrate"))
 {
+    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<CommentDbContext>();
     db.Database.Migrate();
+    return;
 }
+
+app.UseServiceDefaults();
 
 var hitGauge = Metrics.CreateGauge("commentHits", "cache hits");
 var missGauge = Metrics.CreateGauge("commentMisses", "cache misses");
