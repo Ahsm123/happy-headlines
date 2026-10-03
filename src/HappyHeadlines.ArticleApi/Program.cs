@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using EasyNetQ;
 using HappyHeadlines.ArticleApi.Caching;
 using HappyHeadlines.ArticleApi.Data;
@@ -5,7 +6,6 @@ using HappyHeadlines.ArticleApi.Messaging;
 using HappyHeadlines.ArticleApi.Workers;
 using HappyHeadlines.Contracts.Articles;
 using HappyHeadlines.ServiceDefaults.Extensions;
-using HappyHeadlines.ServiceDefaults;
 using Microsoft.EntityFrameworkCore;
 using Prometheus;
 using Scalar.AspNetCore;
@@ -13,12 +13,11 @@ using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add messaging
+builder.Services.AddMessaging(builder.Configuration);
+
 // Add services to the container.
 builder.Services.AddSingleton<Coordinator>();
-var connectionString = builder.Configuration.GetConnectionString("RabbitMq") ??
-                       throw new InvalidOperationException("Missing ConnectionStrings:RabbitMq");
-builder.Services.AddEasyNetQ(connectionString);
-builder.Services.AddSingleton<IMessageClient, MessageClient>();
 builder.Services.AddHostedService<ArticlesWorker>();
 builder.Services.AddHostedService<ArticleCacheWorker>();
 builder.Services.AddControllers();

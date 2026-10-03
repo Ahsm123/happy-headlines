@@ -5,11 +5,10 @@ using HappyHeadlines.ServiceDefaults.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add messaging
+builder.Services.AddMessaging(builder.Configuration);
+
 // Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("RabbitMq") ??
-                       throw new InvalidOperationException("Missing ConnectionStrings:RabbitMq");
-builder.Services.AddEasyNetQ(connectionString);
-builder.Services.AddSingleton<IMessageClient, MessageClient>();
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 

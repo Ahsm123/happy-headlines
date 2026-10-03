@@ -3,10 +3,12 @@ using HappyHeadlines.NewsletterApi.Clients;
 using HappyHeadlines.NewsletterApi.Workers;
 using Polly;
 using Polly.Extensions.Http;
-using HappyHeadlines.ServiceDefaults;
 using HappyHeadlines.ServiceDefaults.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add Messaging
+builder.Services.AddMessaging(builder.Configuration);
 
 // Add policies
 var retryPolicy = HttpPolicyExtensions
@@ -18,12 +20,6 @@ var circuitBreakerPolicy = HttpPolicyExtensions
     .CircuitBreakerAsync(3, TimeSpan.FromSeconds(30));
 
 // Add services to the container.
-
-var connectionString = builder.Configuration.GetConnectionString("RabbitMq") ??
-                       throw new InvalidOperationException("Missing ConnectionStrings:RabbitMq");
-builder.Services.AddEasyNetQ(connectionString);
-builder.Services.AddSingleton<IMessageClient, MessageClient>();
-
 builder.Services.AddHttpClient<IArticleApiClient, ArticleApiClient>(client =>
     client.BaseAddress = new Uri(builder.Configuration["Apis:ArticleApi"] ??
                                  throw new InvalidOperationException("Missing Apis:ArticleApi")))
