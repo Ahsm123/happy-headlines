@@ -4,6 +4,9 @@ using HappyHeadlines.ServiceDefaults.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Shared
+builder.AddServiceDefaults();
+
 // Add services to the container.
 builder.Services.AddDbContext<ProfanityDbContext>(options => options
     .UseNpgsql(builder.Configuration.GetConnectionString("ProfanityDbConnection")));

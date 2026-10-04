@@ -109,8 +109,8 @@ services:
       dockerfile: src/HappyHeadlines.ArticleApi/Dockerfile
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      Seq__ServerUrl: http://seq:5341
-      Zipkin__Endpoint: http://zipkin:9411/api/v2/spans
+      ConnectionStrings__Seq: http://seq:5341
+      ConnectionStrings__Zipkin: http://zipkin:9411/api/v2/spans
       ConnectionStrings__Redis: redis:6379,password=kalo
     depends_on:
       global-db:
@@ -161,8 +161,8 @@ services:
       - "8081:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      Seq__ServerUrl: http://seq:5341
-      Zipkin__Endpoint: http://zipkin:9411/api/v2/spans
+      ConnectionStrings__Seq: http://seq:5341
+      ConnectionStrings__Zipkin: http://zipkin:9411/api/v2/spans
       ConnectionStrings__Redis: redis:6379,password=kalo
     depends_on:
       profanity-api:
@@ -193,8 +193,8 @@ services:
       - "8082:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      Seq__ServerUrl: http://seq:5341
-      Zipkin__Endpoint: http://zipkin:9411/api/v2/spans
+      ConnectionStrings__Seq: http://seq:5341
+      ConnectionStrings__Zipkin: http://zipkin:9411/api/v2/spans
     depends_on:
       profanity-db:
         condition: service_healthy
@@ -220,8 +220,8 @@ services:
       - "8083:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      Seq__ServerUrl: http://seq:5341
-      Zipkin__Endpoint: http://zipkin:9411/api/v2/spans
+      ConnectionStrings__Seq: http://seq:5341
+      ConnectionStrings__Zipkin: http://zipkin:9411/api/v2/spans
     depends_on:
       draft-db:
         condition: service_healthy
@@ -247,8 +247,8 @@ services:
       - "8084:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      Seq__ServerUrl: http://seq:5341
-      Zipkin__Endpoint: http://zipkin:9411/api/v2/spans
+      ConnectionStrings__Seq: http://seq:5341
+      ConnectionStrings__Zipkin: http://zipkin:9411/api/v2/spans
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -259,8 +259,8 @@ services:
       dockerfile: src/HappyHeadlines.NewsletterApi/Dockerfile
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      Seq__ServerUrl: http://seq:5341
-      Zipkin__Endpoint: http://zipkin:9411/api/v2/spans
+      ConnectionStrings__Seq: http://seq:5341
+      ConnectionStrings__Zipkin: http://zipkin:9411/api/v2/spans
     depends_on:
       article-lb:
         condition: service_healthy

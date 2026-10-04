@@ -7,7 +7,8 @@ using HappyHeadlines.ServiceDefaults.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add Messaging
+// Shared
+builder.AddServiceDefaults();
 builder.Services.AddMessaging(builder.Configuration);
 
 // Add policies

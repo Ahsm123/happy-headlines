@@ -13,7 +13,8 @@ using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add messaging
+// Shared
+builder.AddServiceDefaults();
 builder.Services.AddMessaging(builder.Configuration);
 
 // Add services to the container.

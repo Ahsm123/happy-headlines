@@ -7,6 +7,8 @@ namespace HappyHeadlines.ServiceDefaults;
 
 public class MessageClient(IAdvancedBus bus) : IMessageClient
 {
+    public const string ActivitySourceName = "HappyHeadlines.Messaging";
+    private static readonly ActivitySource ActivitySource = new(ActivitySourceName);
     private readonly Dictionary<string, IAsyncDisposable> _subscriptions = new();
 
     public async Task PublishAsync<T>(T message, CancellationToken ct = default)
@@ -53,8 +55,7 @@ public class MessageClient(IAdvancedBus bus) : IMessageClient
                 ? encoder.GetString(bytes)
                 : parentId?.ToString() ?? string.Empty;
 
-            using var activity =
-                MonitorService.ActivitySource.StartActivity("Consume", ActivityKind.Consumer, activityIdStr);
+            using var activity = ActivitySource.StartActivity("Consume", ActivityKind.Consumer, activityIdStr);
             MonitorService.Log.Here().Information("Consuming {MessageType} from {Queue}", typeof(T).Name, queue);
 
             try

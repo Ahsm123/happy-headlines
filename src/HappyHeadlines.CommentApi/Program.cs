@@ -10,6 +10,8 @@ using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Shared
+builder.AddServiceDefaults();
 // Add policies
 var retryPolicy = HttpPolicyExtensions
     .HandleTransientHttpError()

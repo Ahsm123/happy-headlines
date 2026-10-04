@@ -5,10 +5,13 @@ using HappyHeadlines.ServiceDefaults.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Shared
+builder.AddServiceDefaults();
+
 builder.Services.AddDbContext<DraftDbContext>(options => options
     .UseNpgsql(builder.Configuration.GetConnectionString("DraftDbConnection")));
 
-builder.Services.AddScoped<IDraftService, DraftManager>();
+builder.Services.AddScoped<IDraftService, DraftService>();
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
