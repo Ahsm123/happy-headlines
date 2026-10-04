@@ -1,3 +1,5 @@
+using HappyHeadlines.Contracts.Drafts;
+using HappyHeadlines.DraftApi.Extensions;
 using HappyHeadlines.DraftApi.Models;
 using HappyHeadlines.DraftApi.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -5,20 +7,20 @@ using Microsoft.AspNetCore.Mvc;
 namespace HappyHeadlines.DraftApi.Controllers;
 
 [ApiController]
-[Route("api/v1/[controller]")]
+[Route("api/v1/drafts")]
 public class DraftsController(IDraftService draftService) : ControllerBase
 {
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<Draft>> CreateAsync(Draft draft, CancellationToken ct = default)
+    public async Task<ActionResult<DraftDto>> Create(CreateDraftRequest request, CancellationToken ct)
     {
-        var result = await draftService.CreateAsync(draft, ct);
-        return CreatedAtAction(nameof(GetDraft), new { id = result.Id }, result);
+        var draft = await draftService.CreateAsync(request, ct);
+        var dto = draft.ToDto();
+        return CreatedAtAction(nameof(GetById), new { id = dto.Id }, dto);
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Draft>>> GetDrafts(CancellationToken ct = default)
+    public async Task<ActionResult<IEnumerable<Draft>>> GetAll(CancellationToken ct)
     {
         var drafts = await draftService.GetAllAsync(ct);
         return Ok(drafts);
@@ -26,7 +28,7 @@ public class DraftsController(IDraftService draftService) : ControllerBase
 
     [HttpGet("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Draft>> GetDraft(Guid id, CancellationToken ct = default)
+    public async Task<ActionResult<Draft>> GetById(Guid id, CancellationToken ct)
     {
         var draft = await draftService.GetByIdAsync(id, ct);
         return draft is null ? NotFound() : draft;
