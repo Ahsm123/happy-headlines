@@ -20,8 +20,18 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 builder.Services.AddMessaging(builder.Configuration);
 
-// Persistence
+// Data
 builder.Services.AddSingleton<Coordinator>();
+
+// Caching
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+    options.InstanceName = "ArticleApi";
+});
+builder.Services.AddSingleton<IConnectionMultiplexer>(
+    ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")!));
+builder.Services.AddSingleton<ArticleCache>();
 
 // Services
 builder.Services.AddScoped<IArticleService, ArticleService>();
@@ -36,17 +46,6 @@ builder.Services.AddHostedService<ArticleCacheWarmupWorker>();
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
-// Cache
-builder.Services.AddStackExchangeRedisCache(options =>
-{
-    options.Configuration = builder.Configuration.GetConnectionString("Redis");
-    options.InstanceName = "ArticleApi";
-});
-
-builder.Services.AddSingleton<IConnectionMultiplexer>(
-    ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")!));
-builder.Services.AddSingleton<ArticleCache>();
-
 var app = builder.Build();
 
 if (args.Contains("migrate"))
@@ -57,6 +56,7 @@ if (args.Contains("migrate"))
         using var db = coordinator.GetArticleDbContext(region);
         db.Database.Migrate();
     }
+
     return;
 }
 
@@ -73,10 +73,8 @@ using (var scope = app.Services.CreateScope())
         hitGauge.Set(metrics.Result.Hits);
         missGauge.Set(metrics.Result.Misses);
     });
-
 }
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -90,5 +88,4 @@ app.MapGet("/metrics/cache", async (ArticleCache cache) =>
 });
 
 app.MapControllers();
-
 app.Run();

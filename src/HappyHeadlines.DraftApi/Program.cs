@@ -8,9 +8,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Shared
 builder.AddServiceDefaults();
 
+// Data
 builder.Services.AddDbContext<DraftDbContext>(options => options
     .UseNpgsql(builder.Configuration.GetConnectionString("DraftDbConnection")));
 
+// Services
 builder.Services.AddScoped<IDraftService, DraftService>();
 
 builder.Services.AddControllers();
@@ -34,5 +36,4 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapControllers();
-
 app.Run();

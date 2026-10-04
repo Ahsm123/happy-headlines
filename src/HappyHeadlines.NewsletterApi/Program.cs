@@ -24,7 +24,7 @@ var circuitBreakerPolicy = HttpPolicyExtensions
     .HandleTransientHttpError()
     .CircuitBreakerAsync(3, TimeSpan.FromSeconds(30));
 
-// HttpClients
+// Clients
 builder.Services.AddHttpClient<IArticleApiClient, ArticleApiClient>(client =>
     client.BaseAddress = new Uri(builder.Configuration["Apis:ArticleApi"] ??
                                  throw new InvalidOperationException("Missing Apis:ArticleApi")))
@@ -44,5 +44,7 @@ builder.Services.AddHostedService<ArticlePublishedWorker>();
 builder.Services.AddHostedService<DailyNewsletterWorker>();
 
 var app = builder.Build();
+
 app.UseServiceDefaults();
+
 app.Run();

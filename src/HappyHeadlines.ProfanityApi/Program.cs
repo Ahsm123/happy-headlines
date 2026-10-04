@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Shared
 builder.AddServiceDefaults();
 
-// Add services to the container.
+// Data
 builder.Services.AddDbContext<ProfanityDbContext>(options => options
     .UseNpgsql(builder.Configuration.GetConnectionString("ProfanityDbConnection")));
 
@@ -26,12 +26,10 @@ if (args.Contains("migrate"))
 
 app.UseServiceDefaults();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
 app.MapControllers();
-
 app.Run();

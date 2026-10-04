@@ -11,10 +11,24 @@ using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add shared
+// Shared
 builder.AddServiceDefaults();
 
-// Add policies
+// Data
+builder.Services.AddDbContext<CommentDbContext>(options => options
+    .UseNpgsql(builder.Configuration.GetConnectionString("CommentDbConnection")));
+
+// Caching
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+    options.InstanceName = "CommentApi";
+});
+builder.Services.AddSingleton<IConnectionMultiplexer>(
+    ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")!));
+builder.Services.AddScoped<CommentCache>();
+
+// Policies
 var retryPolicy = HttpPolicyExtensions
     .HandleTransientHttpError()
     .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
@@ -22,11 +36,7 @@ var circuitBreakerPolicy = HttpPolicyExtensions
     .HandleTransientHttpError()
     .CircuitBreakerAsync(3, TimeSpan.FromSeconds(30));
 
-// Add db
-builder.Services.AddDbContext<CommentDbContext>(options => options
-    .UseNpgsql(builder.Configuration.GetConnectionString("CommentDbConnection")));
-
-// Add httpClients
+// Clients
 builder.Services.AddHttpClient<IProfanityClient, ProfanityClient>(c =>
         c.BaseAddress = new Uri(builder.Configuration["Apis:ProfanityApi"] ??
                                 throw new InvalidOperationException("Missing Apis:ProfanityApi")))
@@ -36,18 +46,8 @@ builder.Services.AddHttpClient<IArticleClient, ArticleClient>(c =>
     c.BaseAddress = new Uri(builder.Configuration["Apis:ArticleApi"] ??
                             throw new InvalidOperationException("Missing Apis:ArticleApi")));
 
-// Add services
+// Services
 builder.Services.AddScoped<ICommentService, CommentService>();
-
-// Add cache
-builder.Services.AddStackExchangeRedisCache(options =>
-{
-    options.Configuration = builder.Configuration.GetConnectionString("Redis");
-    options.InstanceName = "CommentApi";
-});
-builder.Services.AddSingleton<IConnectionMultiplexer>(
-    ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")!));
-builder.Services.AddScoped<CommentCache>();
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
@@ -75,7 +75,6 @@ Metrics.DefaultRegistry.AddBeforeCollectCallback(() =>
     missGauge.Set(metrics.Result.Misses);
 });
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -88,5 +87,4 @@ app.MapGet("/metrics/cache", async (CommentCache cache) =>
 });
 
 app.MapControllers();
-
 app.Run();
