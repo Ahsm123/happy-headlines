@@ -2,10 +2,8 @@ using System.Text.Json;
 using HappyHeadlines.CommentApi.Clients;
 using HappyHeadlines.CommentApi.Data;
 using HappyHeadlines.CommentApi.Models;
-using HappyHeadlines.ServiceDefaults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.OpenApi;
 using StackExchange.Redis;
 
 namespace HappyHeadlines.CommentApi.Caching;
@@ -14,7 +12,8 @@ public class CommentCache(
     IDistributedCache cache,
     IArticleClient articleClient,
     CommentDbContext dbContext,
-    IConnectionMultiplexer redis)
+    IConnectionMultiplexer redis,
+    ILogger<CommentCache> logger)
 {
     private const string HitsKey = "CommentApi:cache:hits";
     private const string MissesKey = "CommentApi:cache:misses";
@@ -55,9 +54,9 @@ public class CommentCache(
                     await SetCache(articleId, fetchedComments);
                 }
             }
-            catch (HttpRequestException)
+            catch (HttpRequestException ex)
             {
-                MonitorService.Log.Here().Warning("ArticleApi unavailable, skipping cache for article {ArticleId}",
+                logger.LogWarning(ex, "ArticleApi unavailable, skipping cache for article {ArticleId}",
                     articleId);
             }
 
@@ -65,7 +64,7 @@ public class CommentCache(
         }
 
         await OnCacheHit();
-        return JsonSerializer.Deserialize<List<Comment>>(cacheHit);
+        return JsonSerializer.Deserialize<List<Comment>>(cacheHit) ?? [];
     }
 
     private async Task SetCache(Guid articleId, List<Comment> fetchedComments)

@@ -4,36 +4,40 @@ using Polly;
 using Polly.Extensions.Http;
 using Microsoft.EntityFrameworkCore;
 using HappyHeadlines.CommentApi.Data;
+using HappyHeadlines.CommentApi.Services;
 using Prometheus;
 using HappyHeadlines.ServiceDefaults.Extensions;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Shared
+// Add shared
 builder.AddServiceDefaults();
+
 // Add policies
 var retryPolicy = HttpPolicyExtensions
     .HandleTransientHttpError()
     .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
-
 var circuitBreakerPolicy = HttpPolicyExtensions
     .HandleTransientHttpError()
     .CircuitBreakerAsync(3, TimeSpan.FromSeconds(30));
 
-// Add services to the container.
+// Add db
 builder.Services.AddDbContext<CommentDbContext>(options => options
     .UseNpgsql(builder.Configuration.GetConnectionString("CommentDbConnection")));
 
+// Add httpClients
 builder.Services.AddHttpClient<IProfanityClient, ProfanityClient>(c =>
         c.BaseAddress = new Uri(builder.Configuration["Apis:ProfanityApi"] ??
                                 throw new InvalidOperationException("Missing Apis:ProfanityApi")))
     .AddPolicyHandler(retryPolicy)
     .AddPolicyHandler(circuitBreakerPolicy);
-
 builder.Services.AddHttpClient<IArticleClient, ArticleClient>(c =>
     c.BaseAddress = new Uri(builder.Configuration["Apis:ArticleApi"] ??
                             throw new InvalidOperationException("Missing Apis:ArticleApi")));
+
+// Add services
+builder.Services.AddScoped<ICommentService, CommentService>();
 
 // Add cache
 builder.Services.AddStackExchangeRedisCache(options =>
@@ -41,10 +45,8 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.Configuration = builder.Configuration.GetConnectionString("Redis");
     options.InstanceName = "CommentApi";
 });
-
 builder.Services.AddSingleton<IConnectionMultiplexer>(
     ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")!));
-
 builder.Services.AddScoped<CommentCache>();
 
 builder.Services.AddControllers();

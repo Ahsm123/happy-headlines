@@ -2,5 +2,5 @@
 
 public interface IProfanityClient
 {
-    public Task<string> FilterAsync(string commentText);
+    public Task<string> FilterAsync(string commentText, CancellationToken ct);
 }

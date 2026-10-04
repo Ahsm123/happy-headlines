@@ -6,6 +6,7 @@ using HappyHeadlines.Contracts.Articles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
 using StackExchange.Redis;
@@ -23,7 +24,8 @@ public class CommentCacheTests
 
     private CommentCache CreateCache(params Guid[] newestIds) =>
         new(_redis, new FakeArticleClient(newestIds), _db,
-            Mock.Of<IConnectionMultiplexer>(m => m.GetDatabase(It.IsAny<int>(), It.IsAny<object>()) == _counters.Object));
+            Mock.Of<IConnectionMultiplexer>(m => m.GetDatabase(It.IsAny<int>(), It.IsAny<object>()) == _counters.Object),
+            NullLogger<CommentCache>.Instance);
 
     private async Task SeedComment()
     {

@@ -1,61 +1,46 @@
-using HappyHeadlines.CommentApi.Caching;
-using HappyHeadlines.CommentApi.Clients;
-using HappyHeadlines.CommentApi.Data;
+using HappyHeadlines.CommentApi.Extensions;
 using HappyHeadlines.CommentApi.Models;
+using HappyHeadlines.CommentApi.Services;
+using HappyHeadlines.Contracts.Comments;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Polly.CircuitBreaker;
-using HappyHeadlines.ServiceDefaults;
 
 namespace HappyHeadlines.CommentApi.Controllers;
 
 [ApiController]
-[Route("api/v1/[controller]")]
+[Route("api/v1/comments")]
 public class CommentsController(
-    IProfanityClient profanityClient,
-    CommentDbContext commentDbContext,
-    CommentCache cache) : ControllerBase
+    ICommentService commentService) : ControllerBase
 {
     [HttpPost]
-    public async Task<ActionResult<Comment>> PostComment(Comment comment)
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    public async Task<ActionResult<CommentDto>> Create(CreateCommentRequest request, CancellationToken ct)
     {
-        try
-        {
-            comment.CommentText = await profanityClient.FilterAsync(comment.CommentText);
-            comment.IsFiltered = true;
-        }
-        catch (Exception ex) when (ex is BrokenCircuitException or HttpRequestException)
-        {
-            comment.IsFiltered = false;
-            MonitorService.Log.Here().Warning(ex,
-                "ProfanityApi unavailable, saving unfiltered comment for article {ArticleId}", comment.ArticleId);
-        }
-
-        commentDbContext.Comments.Add(comment);
-        await commentDbContext.SaveChangesAsync();
-        MonitorService.Log.Here().Information("Created comment with ID: {CommentId} on article: {ArticleId}",
-            comment.Id, comment.ArticleId);
-
-        await cache.InvalidateCacheEntry(comment.ArticleId);
-
-        return CreatedAtAction(nameof(GetComment), new { id = comment.Id }, comment);
+        var comment = await commentService.CreateAsync(request, ct);
+        var dto = comment.ToDto();
+        
+        return CreatedAtAction(nameof(GetById), new { id = dto.Id }, dto);
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<Comment>> GetComment(Guid id)
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<CommentDto>> GetById(Guid id, CancellationToken ct)
     {
-        var comment = await commentDbContext.Comments.FindAsync(id);
-        if (comment == null)
+        var comment = await commentService.GetByIdAsync(id, ct);
+        if (comment is null)
         {
             return NotFound();
         }
-
-        return comment;
+        
+        return Ok(comment.ToDto());
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Comment>>> GetComments([FromQuery, BindRequired] Guid articleId)
+    public async Task<ActionResult<IEnumerable<CommentDto>>> GetAll([FromQuery, BindRequired] Guid articleId, CancellationToken ct)
     {
-        return await cache.Comments(articleId);
+        var comments = await commentService.GetAllAsync(articleId, ct);
+        
+        return Ok(comments.Select(c => c.ToDto()));
     }
 }
+    
