@@ -4,5 +4,5 @@ namespace HappyHeadlines.CommentApi.Clients;
 
 public interface IArticleClient
 {
-    public Task<IEnumerable<ArticleDto>> GetNewestArticlesAsync(int count);
+    public Task<IEnumerable<ArticleDto>> GetLatestArticlesAsync(int count);
 }

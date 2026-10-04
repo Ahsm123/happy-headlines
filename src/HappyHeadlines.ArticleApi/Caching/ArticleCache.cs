@@ -26,15 +26,18 @@ public class ArticleCache(
         return ((long)await db.StringGetAsync(HitsKey), (long)await db.StringGetAsync(MissesKey));
     }
 
-    public async Task<Article?> GetArticle(Guid articleId, Region region)
+    private static string Key(Region region, Guid id) => id.ToString() + region.ToString();
+    public async Task RemoveAsync(Region region, Guid id) => await cache.RemoveAsync(Key(region, id));
+
+    public async Task<Article?> GetArticle(Region region, Guid id)
     {
-        var key = articleId.ToString() + region.ToString();
+        var key = Key(region, id);
         var cacheHit = await cache.GetAsync(key);
         if (cacheHit is null)
         {
             await OnCacheMiss();
             await using var db = coordinator.GetArticleDbContext(region);
-            var article = await db.Articles.FindAsync(articleId);
+            var article = await db.Articles.FindAsync(id);
             if (article == null)
             {
                 return null;
@@ -52,12 +55,12 @@ public class ArticleCache(
         return JsonSerializer.Deserialize<Article>(cacheHit);
     }
 
-    public async Task SetCache(Article article)
+    private async Task SetCache(Article article)
     {
         var publishDate = article.PublishDate;
         var cacheOffset = new DateTimeOffset(publishDate.AddDays(14), TimeSpan.Zero);
 
-        var key = article.Id.ToString() + article.Region.ToString();
+        var key = Key(article.Region, article.Id);
         await cache.SetAsync(
             key,
             JsonSerializer.SerializeToUtf8Bytes(article),
@@ -77,6 +80,7 @@ public class ArticleCache(
             {
                 await SetCache(article);
             }
+
             count += articles.Count;
         }
 

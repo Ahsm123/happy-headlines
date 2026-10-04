@@ -16,7 +16,10 @@ namespace HappyHeadlines.CommentApi.Tests;
 public class CommentCacheTests
 {
     private readonly Guid _articleId = Guid.NewGuid();
-    private readonly IDistributedCache _redis = new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
+
+    private readonly IDistributedCache _redis =
+        new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
+
     private readonly CommentDbContext _db = new(new DbContextOptionsBuilder<CommentDbContext>()
         .UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
 
@@ -24,7 +27,8 @@ public class CommentCacheTests
 
     private CommentCache CreateCache(params Guid[] newestIds) =>
         new(_redis, new FakeArticleClient(newestIds), _db,
-            Mock.Of<IConnectionMultiplexer>(m => m.GetDatabase(It.IsAny<int>(), It.IsAny<object>()) == _counters.Object),
+            Mock.Of<IConnectionMultiplexer>(m =>
+                m.GetDatabase(It.IsAny<int>(), It.IsAny<object>()) == _counters.Object),
             NullLogger<CommentCache>.Instance);
 
     private async Task SeedComment()
@@ -82,7 +86,7 @@ public class CommentCacheTests
 
     private class FakeArticleClient(Guid[] ids) : IArticleClient
     {
-        public Task<IEnumerable<ArticleDto>> GetNewestArticlesAsync(int count) =>
+        public Task<IEnumerable<ArticleDto>> GetLatestArticlesAsync(int count) =>
             Task.FromResult(ids.Select(id => new ArticleDto { Id = id, Title = "", Content = "", Author = "" }));
     }
 }

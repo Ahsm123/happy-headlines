@@ -46,7 +46,7 @@ public class CommentCache(
 
             try
             {
-                var newestArticles = await articleClient.GetNewestArticlesAsync(30);
+                var newestArticles = await articleClient.GetLatestArticlesAsync(30);
                 var isNewArticle = newestArticles.Any(a => a.Id == articleId);
 
                 if (isNewArticle)

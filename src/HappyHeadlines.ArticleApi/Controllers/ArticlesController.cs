@@ -1,44 +1,20 @@
 using HappyHeadlines.Contracts.Articles;
 using Microsoft.AspNetCore.Mvc;
-using HappyHeadlines.ArticleApi.Models;
-using HappyHeadlines.ArticleApi.Data;
-using HappyHeadlines.ArticleApi.Caching;
 using HappyHeadlines.ArticleApi.Extensions;
-using Microsoft.EntityFrameworkCore;
-using HappyHeadlines.ServiceDefaults;
+using HappyHeadlines.ArticleApi.Services;
 
 namespace HappyHeadlines.ArticleApi.Controllers;
 
 [ApiController]
-[Route("api/v1/regions/{region}/[controller]")]
-public class ArticlesController(
-    Coordinator coordinator,
-    ArticleCache cache) : ControllerBase
+[Route("api/v1/regions/{region}/articles")]
+public class ArticlesController(IArticleService articleService) : ControllerBase
 {
-    [HttpPost]
-    public async Task<ActionResult<ArticleDto>> CreateArticle(Region region, Article a)
+    [HttpGet("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ArticleDto>> GetById(Region region, Guid id, CancellationToken ct)
     {
-        if (region != a.Region)
-        {
-            return BadRequest("Region mismatch");
-        }
-
-        await using var db = coordinator.GetArticleDbContext(region);
-        db.Articles.Add(a);
-        await db.SaveChangesAsync();
-
-        MonitorService.Log.Here().Information("Created article with ID: {ArticleId} in {Region}", a.Id, region);
-
-        var dto = a.ToDto();
-
-        return CreatedAtAction(nameof(GetArticle), new { region, id = dto.Id }, dto);
-    }
-
-    [HttpGet("{id:Guid}")]
-    public async Task<ActionResult<ArticleDto>> GetArticle(Guid id, Region region)
-    {
-        var article = await cache.GetArticle(id, region);
-        if (article == null)
+        var article = await articleService.GetByIdAsync(region, id, ct);
+        if (article is null)
         {
             return NotFound();
         }
@@ -47,81 +23,48 @@ public class ArticlesController(
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ArticleDto>>> GetArticles(Region region, DateTime? fromDate)
+    public async Task<ActionResult<IEnumerable<ArticleDto>>> GetAll(Region region, DateTime? fromDate,
+        CancellationToken ct)
     {
-        await using var db = coordinator.GetArticleDbContext(region);
+        var articles = await articleService.GetAllAsync(region, fromDate, ct);
 
-        var query = db.Articles.AsQueryable();
-
-        if (fromDate.HasValue)
-        {
-            query = query.Where(a => a.PublishDate >= fromDate.Value);
-        }
-
-        var articles = await query.ToListAsync();
-        var dtos = articles.Select(a => a.ToDto()).ToList();
-
-        return Ok(dtos);
+        return Ok(articles.Select(a => a.ToDto()));
     }
 
-    [HttpPut("{id:Guid}")]
-    public async Task<IActionResult> UpdateArticle(Guid id, Region region, Article a)
+    [HttpPut("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> Update(Region region, Guid id, UpdateArticleRequest request,
+        CancellationToken ct)
     {
-        if (region != a.Region)
-        {
-            return BadRequest("Region mismatch");
-        }
-
-        await using var db = coordinator.GetArticleDbContext(region);
-
-        var existing = await db.Articles.FindAsync(id);
-        if (existing == null)
+        var updated = await articleService.UpdateAsync(region, id, request, ct);
+        if (!updated)
         {
             return NotFound();
         }
 
-        existing.Title = a.Title;
-        existing.Content = a.Content;
-        existing.Author = a.Author;
-        existing.PublishDate = a.PublishDate;
-
-        await db.SaveChangesAsync();
-        MonitorService.Log.Here().Information("Updated article with ID: {ArticleId} in {Region}", existing.Id, region);
-
         return NoContent();
     }
 
-    [HttpDelete("{id:Guid}")]
-    public async Task<IActionResult> DeleteArticle(Guid id, Region region)
+    [HttpDelete("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> Delete(Region region, Guid id, CancellationToken ct)
     {
-        await using var db = coordinator.GetArticleDbContext(region);
-
-        var article = await db.Articles.FindAsync(id);
-        if (article == null)
+        var deleted = await articleService.DeleteAsync(region, id, ct);
+        if (!deleted)
         {
             return NotFound();
         }
 
-        db.Articles.Remove(article);
-        await db.SaveChangesAsync();
-        MonitorService.Log.Here().Information("Deleted article with ID: {ArticleId} in {Region}", article.Id, region);
-
         return NoContent();
     }
 
-    [HttpGet]
-    [Route("/api/v1/newest/[Controller]")]
-    public async Task<ActionResult<IEnumerable<ArticleDto>>> GetNewestArticles(int count)
+    [HttpGet("/api/v1/latest/articles")]
+    public async Task<ActionResult<IEnumerable<ArticleDto>>> GetLatest(int count, CancellationToken ct)
     {
-        var articles = new List<ArticleDto>();
-        foreach (var region in Enum.GetValues<Region>())
-        {
-            await using var db = coordinator.GetArticleDbContext(region);
-            var regionArticles = await db.Articles.ToListAsync();
-            articles.AddRange(regionArticles.Select(a => a.ToDto()));
-        }
+        var articles = await articleService.GetLatestAsync(count, ct);
 
-        var newestArticles = articles.OrderByDescending(a => a.PublishDate).Take(count);
-        return Ok(newestArticles);
+        return Ok(articles.Select(a => a.ToDto()));
     }
 }
