@@ -1,3 +1,4 @@
+using System.Security.Principal;
 using HappyHeadlines.DraftApi.Data;
 using HappyHeadlines.DraftApi.Services;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +11,8 @@ builder.AddServiceDefaults();
 
 // Data
 builder.Services.AddDbContext<DraftDbContext>(options => options
-    .UseNpgsql(builder.Configuration.GetConnectionString("DraftDbConnection")));
+    .UseNpgsql(builder.Configuration.GetConnectionString("Database") ??
+               throw new InvalidOperationException("Missing ConnectionStrings:Database")));
 
 // Services
 builder.Services.AddScoped<IDraftService, DraftService>();

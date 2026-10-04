@@ -6,13 +6,12 @@ namespace HappyHeadlines.ArticleApi.Extensions;
 public static class ArticleMappingExtensions
 {
     public static ArticleDto ToDto(this Article article) =>
-        new()
-        {
-            Id = article.Id,
-            Author = article.Author,
-            Content = article.Content,
-            PublishDate = article.PublishDate,
-            Title = article.Title,
-            Region = article.Region
-        };
+        new(
+            article.Id,
+            article.Title,
+            article.Content,
+            article.Author,
+            article.PublishDate,
+            article.Region
+        );
 }

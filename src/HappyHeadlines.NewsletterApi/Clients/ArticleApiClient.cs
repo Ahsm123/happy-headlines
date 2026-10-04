@@ -13,7 +13,6 @@ public sealed class ArticleApiClient(HttpClient httpClient) : IArticleApiClient
         var response = await httpClient.GetAsync($"/api/v1/regions/{region}/articles?fromDate={fromDateString}");
         response.EnsureSuccessStatusCode();
 
-        var articles = await response.Content.ReadFromJsonAsAsyncEnumerable<ArticleDto>().ToListAsync();
-        return articles;
+        return await response.Content.ReadFromJsonAsAsyncEnumerable<ArticleDto>().ToListAsync();
     }
 }

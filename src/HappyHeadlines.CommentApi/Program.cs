@@ -14,16 +14,18 @@ builder.AddServiceDefaults();
 
 // Data
 builder.Services.AddDbContext<CommentDbContext>(options => options
-    .UseNpgsql(builder.Configuration.GetConnectionString("CommentDbConnection")));
+    .UseNpgsql(builder.Configuration.GetConnectionString("Database") ??
+               throw new InvalidOperationException("Missing ConnectionStrings:Database")));
 
 // Caching
+var redisConnection = builder.Configuration.GetConnectionString("Redis")
+    ?? throw new InvalidOperationException("Missing ConnectionStrings:Redis");
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+    options.Configuration = redisConnection;
     options.InstanceName = "CommentApi";
 });
-builder.Services.AddSingleton<IConnectionMultiplexer>(
-    ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")!));
+builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnection));
 builder.Services.AddScoped<CommentCache>();
 
 // Clients

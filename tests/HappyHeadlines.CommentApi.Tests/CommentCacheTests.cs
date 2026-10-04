@@ -87,6 +87,6 @@ public class CommentCacheTests
     private class FakeArticleClient(Guid[] ids) : IArticleClient
     {
         public Task<IEnumerable<ArticleDto>> GetLatestArticlesAsync(int count) =>
-            Task.FromResult(ids.Select(id => new ArticleDto { Id = id, Title = "", Content = "", Author = "" }));
+            Task.FromResult(ids.Select(id => new ArticleDto(id, "", "", "", default, default)));
     }
 }

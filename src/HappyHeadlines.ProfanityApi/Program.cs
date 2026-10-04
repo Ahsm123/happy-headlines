@@ -9,7 +9,8 @@ builder.AddServiceDefaults();
 
 // Data
 builder.Services.AddDbContext<ProfanityDbContext>(options => options
-    .UseNpgsql(builder.Configuration.GetConnectionString("ProfanityDbConnection")));
+    .UseNpgsql(builder.Configuration.GetConnectionString("Database") ??
+               throw new InvalidOperationException("Missing ConnectionStrings:Database")));
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();

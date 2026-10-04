@@ -1,11 +1,3 @@
 namespace HappyHeadlines.Contracts.Articles;
 
-public class ArticleDto
-{
-    public Guid Id { get; set; }
-    public required string Title { get; set; }
-    public required string Content { get; set; }
-    public required string Author { get; set; }
-    public DateTime PublishDate { get; set; }
-    public Region Region { get; set; }
-}
+public record ArticleDto(Guid Id, string Title, string Content, string Author, DateTime PublishDate, Region Region);

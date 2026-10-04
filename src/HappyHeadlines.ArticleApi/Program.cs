@@ -22,13 +22,14 @@ builder.Services.AddMessaging(builder.Configuration);
 builder.Services.AddSingleton<Coordinator>();
 
 // Caching
+var redisConnection = builder.Configuration.GetConnectionString("Redis")
+    ?? throw new InvalidOperationException("Missing ConnectionStrings:Redis");
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+    options.Configuration = redisConnection;
     options.InstanceName = "ArticleApi";
 });
-builder.Services.AddSingleton<IConnectionMultiplexer>(
-    ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")!));
+builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnection));
 builder.Services.AddSingleton<ArticleCache>();
 
 // Services
