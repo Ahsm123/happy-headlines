@@ -1,6 +1,7 @@
 services:
   global-db:
     image: postgres:17
+    ports: ["5433:5432"]
     environment:
       POSTGRES_DB: articledb
       POSTGRES_USER: postgres
@@ -14,6 +15,7 @@ services:
 
   africa-db:
     image: postgres:17
+    ports: ["5434:5432"]
     environment:
       POSTGRES_DB: articledb
       POSTGRES_USER: postgres
@@ -27,6 +29,7 @@ services:
 
   antarctica-db:
     image: postgres:17
+    ports: ["5435:5432"]
     environment:
       POSTGRES_DB: articledb
       POSTGRES_USER: postgres
@@ -40,6 +43,7 @@ services:
 
   asia-db:
     image: postgres:17
+    ports: ["5436:5432"]
     environment:
       POSTGRES_DB: articledb
       POSTGRES_USER: postgres
@@ -53,6 +57,7 @@ services:
 
   europe-db:
     image: postgres:17
+    ports: ["5437:5432"]
     environment:
       POSTGRES_DB: articledb
       POSTGRES_USER: postgres
@@ -66,6 +71,7 @@ services:
 
   north-america-db:
     image: postgres:17
+    ports: ["5438:5432"]
     environment:
       POSTGRES_DB: articledb
       POSTGRES_USER: postgres
@@ -79,6 +85,7 @@ services:
 
   oceania-db:
     image: postgres:17
+    ports: ["5439:5432"]
     environment:
       POSTGRES_DB: articledb
       POSTGRES_USER: postgres
@@ -92,6 +99,7 @@ services:
 
   south-america-db:
     image: postgres:17
+    ports: ["5440:5432"]
     environment:
       POSTGRES_DB: articledb
       POSTGRES_USER: postgres
@@ -111,6 +119,15 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__Seq: http://seq:5341
       ConnectionStrings__Zipkin: http://zipkin:9411/api/v2/spans
+      ConnectionStrings__Messaging: host=rabbitmq;username=kalo;password=kalo
+      ConnectionStrings__DatabaseGlobal: Host=global-db;Port=5432;Database=articledb;Username=postgres;Password=dev
+      ConnectionStrings__DatabaseAfrica: Host=africa-db;Port=5432;Database=articledb;Username=postgres;Password=dev
+      ConnectionStrings__DatabaseAntarctica: Host=antarctica-db;Port=5432;Database=articledb;Username=postgres;Password=dev
+      ConnectionStrings__DatabaseAsia: Host=asia-db;Port=5432;Database=articledb;Username=postgres;Password=dev
+      ConnectionStrings__DatabaseEurope: Host=europe-db;Port=5432;Database=articledb;Username=postgres;Password=dev
+      ConnectionStrings__DatabaseNorthAmerica: Host=north-america-db;Port=5432;Database=articledb;Username=postgres;Password=dev
+      ConnectionStrings__DatabaseOceania: Host=oceania-db;Port=5432;Database=articledb;Username=postgres;Password=dev
+      ConnectionStrings__DatabaseSouthAmerica: Host=south-america-db;Port=5432;Database=articledb;Username=postgres;Password=dev
       ConnectionStrings__Redis: redis:6379,password=kalo
     depends_on:
       global-db:
@@ -163,6 +180,9 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__Seq: http://seq:5341
       ConnectionStrings__Zipkin: http://zipkin:9411/api/v2/spans
+      ConnectionStrings__Database: Host=comment-db;Port=5432;Database=commentdb;Username=postgres;Password=dev
+      Apis__ProfanityApi: http://profanity-api:8080
+      Apis__ArticleApi: http://article-lb:80
       ConnectionStrings__Redis: redis:6379,password=kalo
     depends_on:
       profanity-api:
@@ -174,6 +194,7 @@ services:
 
   comment-db:
     image: postgres:17
+    ports: ["5441:5432"]
     environment:
       POSTGRES_DB: commentdb
       POSTGRES_USER: postgres
@@ -195,12 +216,14 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__Seq: http://seq:5341
       ConnectionStrings__Zipkin: http://zipkin:9411/api/v2/spans
+      ConnectionStrings__Database: Host=profanity-db;Port=5432;Database=profanitydb;Username=postgres;Password=dev
     depends_on:
       profanity-db:
         condition: service_healthy
 
   profanity-db:
     image: postgres:17
+    ports: ["5442:5432"]
     environment:
       POSTGRES_DB: profanitydb
       POSTGRES_USER: postgres
@@ -222,12 +245,14 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__Seq: http://seq:5341
       ConnectionStrings__Zipkin: http://zipkin:9411/api/v2/spans
+      ConnectionStrings__Database: Host=draft-db;Port=5432;Database=draftdb;Username=postgres;Password=dev
     depends_on:
       draft-db:
         condition: service_healthy
   
   draft-db:
     image: postgres:17
+    ports: ["5443:5432"]
     environment:
       POSTGRES_DB: draftdb
       POSTGRES_USER: postgres
@@ -249,6 +274,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__Seq: http://seq:5341
       ConnectionStrings__Zipkin: http://zipkin:9411/api/v2/spans
+      ConnectionStrings__Messaging: host=rabbitmq;username=kalo;password=kalo
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -261,6 +287,8 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__Seq: http://seq:5341
       ConnectionStrings__Zipkin: http://zipkin:9411/api/v2/spans
+      ConnectionStrings__Messaging: host=rabbitmq;username=kalo;password=kalo
+      Apis__ArticleApi: http://article-lb:80
     depends_on:
       article-lb:
         condition: service_healthy
