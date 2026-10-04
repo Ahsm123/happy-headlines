@@ -2,10 +2,11 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using EasyNetQ;
+using Microsoft.Extensions.Logging;
 
 namespace HappyHeadlines.ServiceDefaults;
 
-public class MessageClient(IAdvancedBus bus) : IMessageClient
+public class MessageClient(IAdvancedBus bus, ILogger<MessageClient> logger) : IMessageClient
 {
     public const string ActivitySourceName = "HappyHeadlines.Messaging";
     private static readonly ActivitySource ActivitySource = new(ActivitySourceName);
@@ -56,7 +57,7 @@ public class MessageClient(IAdvancedBus bus) : IMessageClient
                 : parentId?.ToString() ?? string.Empty;
 
             using var activity = ActivitySource.StartActivity("Consume", ActivityKind.Consumer, activityIdStr);
-            MonitorService.Log.Here().Information("Consuming {MessageType} from {Queue}", typeof(T).Name, queue);
+            logger.LogInformation("Consuming {MessageType} from {Queue}", typeof(T).Name, queue.Name);
 
             try
             {
@@ -64,11 +65,9 @@ public class MessageClient(IAdvancedBus bus) : IMessageClient
             }
             catch (Exception ex)
             {
-                MonitorService.Log.Here()
-                    .Error(ex, "Failed to handle {MessageType} from {Queue}", typeof(T).Name, queue);
+                logger.LogError(ex, "Failed to handle {MessageType} from {Queue}", typeof(T).Name, queue.Name);
                 throw;
             }
-
         });
 
         _subscriptions[subscriberId] = handle;
