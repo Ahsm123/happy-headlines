@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace HappyHeadlines.PublisherApi.Controllers;
 
 [ApiController]
-[Route("api/v1/[controller]")]
+[Route("api/v1/publications")]
 public class PublicationsController(IMessageClient client) : ControllerBase
 {
     [HttpPost]

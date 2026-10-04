@@ -20,17 +20,23 @@ public class DraftsController(IDraftService draftService) : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Draft>>> GetAll(CancellationToken ct)
+    public async Task<ActionResult<IEnumerable<DraftDto>>> GetAll(CancellationToken ct)
     {
         var drafts = await draftService.GetAllAsync(ct);
-        return Ok(drafts);
+
+        return Ok(drafts.Select(d => d.ToDto()));
     }
 
     [HttpGet("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<Draft>> GetById(Guid id, CancellationToken ct)
+    public async Task<ActionResult<DraftDto>> GetById(Guid id, CancellationToken ct)
     {
         var draft = await draftService.GetByIdAsync(id, ct);
-        return draft is null ? NotFound() : draft;
+        if (draft is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(draft.ToDto());
     }
 }

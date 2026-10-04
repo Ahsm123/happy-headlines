@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace HappyHeadlines.ProfanityApi.Controllers;
 
 [ApiController]
-[Route("api/v1/[controller]")]
+[Route("api/v1/profanities")]
 public class ProfanitiesController : ControllerBase
 {
     [HttpPost("filter")]
@@ -12,5 +12,4 @@ public class ProfanitiesController : ControllerBase
     {
         return new FilterResult(request.Text);
     }
-
 }
