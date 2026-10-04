@@ -2,6 +2,7 @@ using HappyHeadlines.Contracts.Articles;
 using HappyHeadlines.Contracts.Events;
 using HappyHeadlines.NewsletterApi.Clients;
 using Polly.CircuitBreaker;
+using Polly.Timeout;
 
 namespace HappyHeadlines.NewsletterApi.Services;
 
@@ -38,7 +39,7 @@ public sealed class NewsletterService(
                 logger.LogInformation("Fetched: {ArticleCount} articles from {Region}",
                     regionalArticles.Count, region);
             }
-            catch (Exception ex) when (ex is BrokenCircuitException or HttpRequestException)
+            catch (Exception ex) when (ex is BrokenCircuitException or TimeoutRejectedException or HttpRequestException)
             {
                 logger.LogWarning(ex, "Failed to fetch articles from {Region}", region);
             }

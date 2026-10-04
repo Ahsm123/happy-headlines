@@ -5,8 +5,6 @@ using HappyHeadlines.NewsletterApi.Messaging;
 using HappyHeadlines.NewsletterApi.Services;
 using HappyHeadlines.NewsletterApi.Workers;
 using HappyHeadlines.ServiceDefaults;
-using Polly;
-using Polly.Extensions.Http;
 using HappyHeadlines.ServiceDefaults.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,21 +13,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 builder.Services.AddMessaging(builder.Configuration);
 
-// Policies
-var retryPolicy = HttpPolicyExtensions
-    .HandleTransientHttpError()
-    .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
-
-var circuitBreakerPolicy = HttpPolicyExtensions
-    .HandleTransientHttpError()
-    .CircuitBreakerAsync(3, TimeSpan.FromSeconds(30));
-
 // Clients
 builder.Services.AddHttpClient<IArticleApiClient, ArticleApiClient>(client =>
-    client.BaseAddress = new Uri(builder.Configuration["Apis:ArticleApi"] ??
-                                 throw new InvalidOperationException("Missing Apis:ArticleApi")))
-        .AddPolicyHandler(retryPolicy)
-        .AddPolicyHandler(circuitBreakerPolicy);
+        client.BaseAddress = new Uri(builder.Configuration["Apis:ArticleApi"] ??
+                                     throw new InvalidOperationException("Missing Apis:ArticleApi")))
+    .AddStandardResilienceHandler();
 
 builder.Services.AddSingleton<ISubscriberClient, SubscriberClient>();
 

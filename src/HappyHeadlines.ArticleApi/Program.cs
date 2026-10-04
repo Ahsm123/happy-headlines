@@ -1,5 +1,3 @@
-using System.Runtime.CompilerServices;
-using EasyNetQ;
 using HappyHeadlines.ArticleApi.Caching;
 using HappyHeadlines.ArticleApi.Data;
 using HappyHeadlines.ArticleApi.Messaging;

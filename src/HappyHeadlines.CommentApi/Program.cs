@@ -1,7 +1,5 @@
 using HappyHeadlines.CommentApi.Caching;
 using HappyHeadlines.CommentApi.Clients;
-using Polly;
-using Polly.Extensions.Http;
 using Microsoft.EntityFrameworkCore;
 using HappyHeadlines.CommentApi.Data;
 using HappyHeadlines.CommentApi.Services;
@@ -28,23 +26,16 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(
     ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")!));
 builder.Services.AddScoped<CommentCache>();
 
-// Policies
-var retryPolicy = HttpPolicyExtensions
-    .HandleTransientHttpError()
-    .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
-var circuitBreakerPolicy = HttpPolicyExtensions
-    .HandleTransientHttpError()
-    .CircuitBreakerAsync(3, TimeSpan.FromSeconds(30));
-
 // Clients
 builder.Services.AddHttpClient<IProfanityClient, ProfanityClient>(c =>
         c.BaseAddress = new Uri(builder.Configuration["Apis:ProfanityApi"] ??
                                 throw new InvalidOperationException("Missing Apis:ProfanityApi")))
-    .AddPolicyHandler(retryPolicy)
-    .AddPolicyHandler(circuitBreakerPolicy);
+    .AddStandardResilienceHandler();
+
 builder.Services.AddHttpClient<IArticleClient, ArticleClient>(c =>
-    c.BaseAddress = new Uri(builder.Configuration["Apis:ArticleApi"] ??
-                            throw new InvalidOperationException("Missing Apis:ArticleApi")));
+        c.BaseAddress = new Uri(builder.Configuration["Apis:ArticleApi"] ??
+                                throw new InvalidOperationException("Missing Apis:ArticleApi")))
+    .AddStandardResilienceHandler();
 
 // Services
 builder.Services.AddScoped<ICommentService, CommentService>();

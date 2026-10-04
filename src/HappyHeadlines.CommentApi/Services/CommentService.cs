@@ -4,6 +4,7 @@ using HappyHeadlines.CommentApi.Data;
 using HappyHeadlines.CommentApi.Models;
 using HappyHeadlines.Contracts.Comments;
 using Polly.CircuitBreaker;
+using Polly.Timeout;
 
 namespace HappyHeadlines.CommentApi.Services;
 
@@ -25,7 +26,7 @@ public sealed class CommentService(
             comment.CommentText = await profanityClient.FilterAsync(comment.CommentText, ct);
             comment.IsFiltered = true;
         }
-        catch (Exception ex) when (ex is BrokenCircuitException or HttpRequestException)
+        catch (Exception ex) when (ex is BrokenCircuitException or HttpRequestException or TimeoutRejectedException)
         {
             comment.IsFiltered = false;
             logger.LogWarning(ex,

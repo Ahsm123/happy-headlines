@@ -2,7 +2,7 @@
 
 namespace HappyHeadlines.NewsletterApi.Clients;
 
-public class ArticleApiClient(HttpClient httpClient) : IArticleApiClient
+public sealed class ArticleApiClient(HttpClient httpClient) : IArticleApiClient
 {
     public async Task<List<ArticleDto>> GetTodaysArticles(Region region)
     {
