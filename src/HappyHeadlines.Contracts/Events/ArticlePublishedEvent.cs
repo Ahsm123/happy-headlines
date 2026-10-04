@@ -2,7 +2,7 @@ using HappyHeadlines.Contracts.Articles;
 
 namespace HappyHeadlines.Contracts.Events;
 
-public record ArticleMessage(
+public record ArticlePublishedEvent(
     Guid ArticleId, 
     string Title, 
     string Content, 

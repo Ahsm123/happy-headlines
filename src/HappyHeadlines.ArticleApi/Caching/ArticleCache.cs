@@ -2,6 +2,7 @@
 using HappyHeadlines.ArticleApi.Data;
 using HappyHeadlines.ArticleApi.Models;
 using HappyHeadlines.Contracts.Articles;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using StackExchange.Redis;
 
@@ -10,7 +11,8 @@ namespace HappyHeadlines.ArticleApi.Caching;
 public class ArticleCache(
     IDistributedCache cache,
     Coordinator coordinator,
-    IConnectionMultiplexer redis)
+    IConnectionMultiplexer redis,
+    ILogger<ArticleCache> logger)
 {
     private const string HitsKey = "ArticleApi:cache:hits";
     private const string MissesKey = "ArticleApi:cache:misses";
@@ -61,5 +63,23 @@ public class ArticleCache(
             JsonSerializer.SerializeToUtf8Bytes(article),
             new DistributedCacheEntryOptions
                 { AbsoluteExpiration = cacheOffset });
+    }
+
+    public async Task WarmUpAsync(CancellationToken ct)
+    {
+        var since = DateTime.UtcNow.AddDays(-14);
+        var count = 0;
+        foreach (var region in Enum.GetValues<Region>())
+        {
+            await using var db = coordinator.GetArticleDbContext(region);
+            var articles = await db.Articles.Where(a => a.PublishDate > since).ToListAsync(ct);
+            foreach (var article in articles)
+            {
+                await SetCache(article);
+            }
+            count += articles.Count;
+        }
+
+        logger.LogInformation("Warmed article cache with {ArticleCount} articles", count);
     }
 }

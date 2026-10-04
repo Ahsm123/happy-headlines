@@ -4,7 +4,7 @@ namespace HappyHeadlines.NewsletterApi.Clients;
 
 public class ArticleApiClient(HttpClient httpClient) : IArticleApiClient
 {
-    public async Task<List<ArticleDto?>> GetTodaysArticles(Region region)
+    public async Task<List<ArticleDto>> GetTodaysArticles(Region region)
     {
         //from the start of today
         var fromDate = DateTime.Today;

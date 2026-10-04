@@ -3,8 +3,11 @@ using EasyNetQ;
 using HappyHeadlines.ArticleApi.Caching;
 using HappyHeadlines.ArticleApi.Data;
 using HappyHeadlines.ArticleApi.Messaging;
+using HappyHeadlines.ArticleApi.Services;
 using HappyHeadlines.ArticleApi.Workers;
 using HappyHeadlines.Contracts.Articles;
+using HappyHeadlines.Contracts.Events;
+using HappyHeadlines.ServiceDefaults;
 using HappyHeadlines.ServiceDefaults.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Prometheus;
@@ -17,14 +20,23 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 builder.Services.AddMessaging(builder.Configuration);
 
-// Add services to the container.
+// Persistence
 builder.Services.AddSingleton<Coordinator>();
-builder.Services.AddHostedService<ArticlesWorker>();
-builder.Services.AddHostedService<ArticleCacheWorker>();
+
+// Services
+builder.Services.AddScoped<IArticleService, ArticleService>();
+
+// Messaging
+builder.Services.AddScoped<IMessageHandler<ArticlePublishedEvent>, ArticlePublishedHandler>();
+builder.Services.AddHostedService<ArticlePublishedWorker>();
+
+// Workers
+builder.Services.AddHostedService<ArticleCacheWarmupWorker>();
+
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
-// Add cache
+// Cache
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = builder.Configuration.GetConnectionString("Redis");

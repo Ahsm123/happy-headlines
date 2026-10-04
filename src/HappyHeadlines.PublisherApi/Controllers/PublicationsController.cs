@@ -14,7 +14,7 @@ public class PublicationsController(IMessageClient client) : ControllerBase
     [ProducesResponseType(StatusCodes.Status202Accepted)]
     public async Task<ActionResult<Guid>> PublishArticle([FromBody] PublishRequest request)
     {
-        var message = new ArticleMessage(
+        var message = new ArticlePublishedEvent(
             Guid.NewGuid(), 
             request.Title, 
             request.Content, 
@@ -22,7 +22,7 @@ public class PublicationsController(IMessageClient client) : ControllerBase
             DateTime.UtcNow, 
             request.Region);
         
-        await client.PublishAsync<ArticleMessage>(message);
+        await client.PublishAsync<ArticlePublishedEvent>(message);
         return Accepted(message.ArticleId); 
     }
 }
