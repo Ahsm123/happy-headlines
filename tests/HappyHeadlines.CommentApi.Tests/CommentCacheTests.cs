@@ -1,8 +1,6 @@
 using HappyHeadlines.CommentApi.Caching;
-using HappyHeadlines.CommentApi.Clients;
 using HappyHeadlines.CommentApi.Data;
 using HappyHeadlines.CommentApi.Models;
-using HappyHeadlines.Contracts.Articles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
@@ -25,8 +23,8 @@ public class CommentCacheTests
 
     private readonly Mock<IDatabase> _counters = new();
 
-    private CommentCache CreateCache(params Guid[] newestIds) =>
-        new(_redis, new FakeArticleClient(newestIds), _db,
+    private CommentCache CreateCache() =>
+        new(_redis, _db,
             Mock.Of<IConnectionMultiplexer>(m =>
                 m.GetDatabase(It.IsAny<int>(), It.IsAny<object>()) == _counters.Object),
             NullLogger<CommentCache>.Instance);
@@ -38,32 +36,51 @@ public class CommentCacheTests
     }
 
     [Fact]
-    public async Task Miss_ArticleInNewest_IsCached()
+    public async Task Miss_IsCached()
     {
         await SeedComment();
 
-        var comments = await CreateCache(_articleId).Comments(_articleId);
+        var comments = await CreateCache().Comments(_articleId);
 
         Assert.Single(comments);
         Assert.NotNull(await _redis.GetStringAsync(_articleId.ToString()));
     }
 
     [Fact]
-    public async Task Miss_ArticleNotInNewest_IsNotCached()
+    public async Task Read_TouchesLruTimestamp()
     {
+        await CreateCache().Comments(_articleId);
+
+        _counters.Verify(d => d.SortedSetAddAsync("CommentApi:lru", _articleId.ToString(), It.IsAny<double>(),
+            It.IsAny<SortedSetWhen>(), It.IsAny<CommandFlags>()));
+    }
+
+    [Fact]
+    public async Task Miss_OverCapacity_EvictsLeastRecentlyUsed()
+    {
+        // Simulerer at LRU-sættet har 31 artikler, og at oldId er den længst tid siden brugte.
+        var oldId = Guid.NewGuid().ToString();
+        await _redis.SetStringAsync(oldId, "[]");
+        _counters.Setup(d => d.SortedSetLengthAsync("CommentApi:lru", It.IsAny<double>(), It.IsAny<double>(),
+                It.IsAny<Exclude>(), It.IsAny<CommandFlags>()))
+            .ReturnsAsync(31);
+        _counters.Setup(d => d.SortedSetRangeByRankAsync("CommentApi:lru", 0, 0, It.IsAny<Order>(),
+                It.IsAny<CommandFlags>()))
+            .ReturnsAsync([oldId]);
         await SeedComment();
 
-        var comments = await CreateCache(Guid.NewGuid()).Comments(_articleId);
+        await CreateCache().Comments(_articleId);
 
-        Assert.Single(comments);
-        Assert.Null(await _redis.GetStringAsync(_articleId.ToString()));
+        Assert.Null(await _redis.GetStringAsync(oldId));
+        Assert.NotNull(await _redis.GetStringAsync(_articleId.ToString()));
+        _counters.Verify(d => d.SortedSetRemoveRangeByRankAsync("CommentApi:lru", 0, 0, It.IsAny<CommandFlags>()));
     }
 
     [Fact]
     public async Task Invalidate_RemovesEntry()
     {
         await SeedComment();
-        var cache = CreateCache(_articleId);
+        var cache = CreateCache();
         await cache.Comments(_articleId);
 
         await cache.InvalidateCacheEntry(_articleId);
@@ -75,18 +92,12 @@ public class CommentCacheTests
     public async Task MissThenHit_IncrementsCounters()
     {
         await SeedComment();
-        var cache = CreateCache(_articleId);
+        var cache = CreateCache();
 
         await cache.Comments(_articleId);
         await cache.Comments(_articleId);
 
         _counters.Verify(d => d.StringIncrementAsync("CommentApi:cache:misses", 1, CommandFlags.None), Times.Once);
         _counters.Verify(d => d.StringIncrementAsync("CommentApi:cache:hits", 1, CommandFlags.None), Times.Once);
-    }
-
-    private class FakeArticleClient(Guid[] ids) : IArticleClient
-    {
-        public Task<IEnumerable<ArticleDto>> GetLatestArticlesAsync(int count) =>
-            Task.FromResult(ids.Select(id => new ArticleDto(id, "", "", "", default, default)));
     }
 }

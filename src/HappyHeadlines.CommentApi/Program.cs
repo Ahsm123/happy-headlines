@@ -34,10 +34,6 @@ builder.Services.AddHttpClient<IProfanityClient, ProfanityClient>(c =>
                                 throw new InvalidOperationException("Missing Apis:ProfanityApi")))
     .AddStandardResilienceHandler();
 
-builder.Services.AddHttpClient<IArticleClient, ArticleClient>(c =>
-        c.BaseAddress = new Uri(builder.Configuration["Apis:ArticleApi"] ??
-                                throw new InvalidOperationException("Missing Apis:ArticleApi")))
-    .AddStandardResilienceHandler();
 
 // Services
 builder.Services.AddScoped<ICommentService, CommentService>();

@@ -182,7 +182,6 @@ services:
       ConnectionStrings__Zipkin: http://zipkin:9411/api/v2/spans
       ConnectionStrings__Database: Host=comment-db;Port=5432;Database=commentdb;Username=postgres;Password=dev
       Apis__ProfanityApi: http://profanity-api:8080
-      Apis__ArticleApi: http://article-lb:80
       ConnectionStrings__Redis: redis:6379,password=kalo
     depends_on:
       profanity-api:
