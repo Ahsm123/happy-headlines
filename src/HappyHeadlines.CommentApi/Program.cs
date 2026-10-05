@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using HappyHeadlines.CommentApi.Data;
 using HappyHeadlines.CommentApi.Services;
 using Prometheus;
+using Scalar.AspNetCore;
 using HappyHeadlines.ServiceDefaults.Extensions;
 using StackExchange.Redis;
 
@@ -67,6 +68,7 @@ Metrics.DefaultRegistry.AddBeforeCollectCallback(() =>
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 app.MapGet("/metrics/cache", async (CommentCache cache) =>
