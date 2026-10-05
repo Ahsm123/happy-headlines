@@ -60,7 +60,6 @@ public class CommentCache(
 
         // Opdaterer i LRU-listen, hvornår artiklen sidst er læst. Det skal ske både ved hit og miss,
         // sådan at en populær artikel bliver ved med at være "senest brugt" og ikke bliver evicted.
-        // SortedSetAdd tilføjer artiklen, hvis den ikke er i LRU-listen, og ellers opdateres scoren hvis den er.
         await db.SortedSetAddAsync(LruKey, id, DateTime.UtcNow.Ticks);
 
         var cacheHit = await cache.GetStringAsync(id);
@@ -88,23 +87,20 @@ public class CommentCache(
     // De fjernes begge steder, deres comments slettes fra cachen, og deres articleId slettes fra LRU-listen.
     private async Task EvictLeastRecentlyUsed(IDatabase db)
     {
-        // Fx 31 artikler i listen - 30 = 1 artikel for meget.
         var overflow = await db.SortedSetLengthAsync(LruKey) - Capacity;
         if (overflow <= 0)
         {
             return;
         }
-        
-        // Rank er pladsen i den sorted list: rank 0 = laveste score = længst tid siden brugt.
-        // Vi henter articleId på index 0 til overflow-1, altså de overflow artikler, der blev læst for længst tid siden.
-        var victims = await db.SortedSetRangeByRankAsync(LruKey, 0, overflow - 1);
-        foreach (var victim in victims)
+
+        // Overflow = de ældste med laveste score
+        var lastRecentlyUsed = await db.SortedSetRangeByRankAsync(LruKey, 0, overflow - 1);
+        foreach (var articleId in lastRecentlyUsed)
         {
-            await cache.RemoveAsync(victim.ToString());
+            await cache.RemoveAsync(articleId.ToString());
         }
 
-        // Fjerner de samme articleId'er fra LRU-listen.
         await db.SortedSetRemoveRangeByRankAsync(LruKey, 0, overflow - 1);
-        logger.LogInformation("Evicted {Count} articles from comment cache", victims.Length);
+        logger.LogInformation("Evicted {Count} articles from comment cache", lastRecentlyUsed.Length);
     }
 }

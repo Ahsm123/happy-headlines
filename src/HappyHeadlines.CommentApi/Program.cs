@@ -20,7 +20,7 @@ builder.Services.AddDbContext<CommentDbContext>(options => options
 
 // Caching
 var redisConnection = builder.Configuration.GetConnectionString("Redis")
-    ?? throw new InvalidOperationException("Missing ConnectionStrings:Redis");
+                      ?? throw new InvalidOperationException("Missing ConnectionStrings:Redis");
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = redisConnection;
@@ -56,13 +56,12 @@ app.UseServiceDefaults();
 
 var hitGauge = Metrics.CreateGauge("commentHits", "cache hits");
 var missGauge = Metrics.CreateGauge("commentMisses", "cache misses");
-Metrics.DefaultRegistry.AddBeforeCollectCallback(() =>
+Metrics.DefaultRegistry.AddBeforeCollectCallback(async ct =>
 {
     using var scope = app.Services.CreateScope();
-    var cache = scope.ServiceProvider.GetRequiredService<CommentCache>();
-    var metrics = cache.Stats();
-    hitGauge.Set(metrics.Result.Hits);
-    missGauge.Set(metrics.Result.Misses);
+    var (hits, misses) = await scope.ServiceProvider.GetRequiredService<CommentCache>().Stats();
+    hitGauge.Set(hits);
+    missGauge.Set(misses);
 });
 
 if (app.Environment.IsDevelopment())

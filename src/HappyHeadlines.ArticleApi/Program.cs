@@ -23,7 +23,7 @@ builder.Services.AddSingleton<Coordinator>();
 
 // Caching
 var redisConnection = builder.Configuration.GetConnectionString("Redis")
-    ?? throw new InvalidOperationException("Missing ConnectionStrings:Redis");
+                      ?? throw new InvalidOperationException("Missing ConnectionStrings:Redis");
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = redisConnection;
@@ -61,18 +61,15 @@ if (args.Contains("migrate"))
 
 app.UseServiceDefaults();
 
-using (var scope = app.Services.CreateScope())
+var articleCache = app.Services.GetRequiredService<ArticleCache>();
+var hitGauge = Metrics.CreateGauge("articleHits", "cache hits");
+var missGauge = Metrics.CreateGauge("articleMisses", "cache misses");
+Metrics.DefaultRegistry.AddBeforeCollectCallback(async ct =>
 {
-    var cache = scope.ServiceProvider.GetRequiredService<ArticleCache>();
-    var hitGauge = Metrics.CreateGauge("articleHits", "cache hits");
-    var missGauge = Metrics.CreateGauge("articleMisses", "cache misses");
-    Metrics.DefaultRegistry.AddBeforeCollectCallback(() =>
-    {
-        var metrics = cache.Stats();
-        hitGauge.Set(metrics.Result.Hits);
-        missGauge.Set(metrics.Result.Misses);
-    });
-}
+    var (hits, misses) = await articleCache.Stats();
+    hitGauge.Set(hits);
+    missGauge.Set(misses);
+});
 
 if (app.Environment.IsDevelopment())
 {

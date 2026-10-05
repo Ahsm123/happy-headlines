@@ -66,7 +66,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "max(articleHits) / (max(articleHits) + max(articleMisses))",
+                        "expr": "max(delta(articleHits[1m])) / (max(delta(articleHits[1m])) + max(delta(articleMisses[1m]))",
                         "instant": false,
                         "legendFormat": "__auto",
                         "range": true
@@ -189,7 +189,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "max(commentHits) / (max(commentHits) + max(commentMisses))",
+                        "expr": "max(delta(commentHits[1m])) / (max(delta(commentHits[1m])) + max(delta(commentMisses[1m])))",
                         "legendFormat": "__auto",
                         "range": true
                       }

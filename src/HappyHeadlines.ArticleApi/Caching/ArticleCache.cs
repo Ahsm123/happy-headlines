@@ -14,6 +14,8 @@ public class ArticleCache(
     IConnectionMultiplexer redis,
     ILogger<ArticleCache> logger)
 {
+    private static readonly TimeSpan CacheWindow = TimeSpan.FromDays(14);
+    
     private const string HitsKey = "ArticleApi:cache:hits";
     private const string MissesKey = "ArticleApi:cache:misses";
 
@@ -26,57 +28,40 @@ public class ArticleCache(
         return ((long)await db.StringGetAsync(HitsKey), (long)await db.StringGetAsync(MissesKey));
     }
 
-    private static string Key(Region region, Guid id) => id.ToString() + region.ToString();
-    public async Task RemoveAsync(Region region, Guid id) => await cache.RemoveAsync(Key(region, id));
+    public Task RemoveAsync(Guid id) => cache.RemoveAsync(id.ToString());
 
-    public async Task<Article?> GetArticle(Region region, Guid id)
+    public async Task<Article?> GetArticle(Guid id)
     {
-        if (region != Region.Global)
+        var cached = await cache.GetAsync(id.ToString());
+        if (cached is not null)
         {
-            await using var regionalDb = coordinator.GetArticleDbContext(region);
-            return await regionalDb.Articles.FindAsync(id);
+            await OnCacheHit();
+            return JsonSerializer.Deserialize<Article>(cached);
         }
 
-        var key = Key(region, id);
-        var cacheHit = await cache.GetAsync(key);
-        if (cacheHit is null)
+        await OnCacheMiss();
+        await using var db = coordinator.GetArticleDbContext(Region.Global);
+        var article = await db.Articles.FindAsync(id);
+        if (article is not null && DateTime.UtcNow < article.PublishDate + CacheWindow)
         {
-            await OnCacheMiss();
-            await using var db = coordinator.GetArticleDbContext(region);
-            var article = await db.Articles.FindAsync(id);
-            if (article == null)
-            {
-                return null;
-            }
-
-            if (DateTime.UtcNow < article.PublishDate.AddDays(14))
-            {
-                await SetCache(article);
-            }
-
-            return article;
+            await SetCache(article);
         }
 
-        await OnCacheHit();
-        return JsonSerializer.Deserialize<Article>(cacheHit);
+        return article;
     }
 
-    private async Task SetCache(Article article)
-    {
-        var publishDate = article.PublishDate;
-        var cacheOffset = new DateTimeOffset(publishDate.AddDays(14), TimeSpan.Zero);
-
-        var key = Key(article.Region, article.Id);
-        await cache.SetAsync(
-            key,
+    private Task SetCache(Article article) =>
+        cache.SetAsync(
+            article.Id.ToString(),
             JsonSerializer.SerializeToUtf8Bytes(article),
             new DistributedCacheEntryOptions
-                { AbsoluteExpiration = cacheOffset });
-    }
+            {
+                AbsoluteExpiration = new DateTimeOffset(article.PublishDate + CacheWindow, TimeSpan.Zero)
+            });
 
     public async Task WarmUpAsync(CancellationToken ct)
     {
-        var since = DateTime.UtcNow.AddDays(-14);
+        var since = DateTime.UtcNow - CacheWindow;
         await using var db = coordinator.GetArticleDbContext(Region.Global);
         var articles = await db.Articles.Where(a => a.PublishDate > since).ToListAsync(ct);
         foreach (var article in articles)

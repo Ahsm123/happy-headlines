@@ -37,8 +37,13 @@ public sealed class ArticleService(
 
     public async Task<Article?> GetByIdAsync(Region region, Guid id, CancellationToken ct)
     {
-        var article = await cache.GetArticle(region, id);
-        return article;
+        if (region == Region.Global)
+        {
+            return await cache.GetArticle(id);
+        }
+
+        await using var db = coordinator.GetArticleDbContext(region);
+        return await db.Articles.FindAsync([id], ct);
     }
 
     public async Task<IEnumerable<Article>> GetAllAsync(Region region, DateTime? fromDate, CancellationToken ct)
@@ -71,7 +76,7 @@ public sealed class ArticleService(
         existing.PublishDate = request.PublishDate;
 
         await db.SaveChangesAsync(ct);
-        await cache.RemoveAsync(region, id);
+        await cache.RemoveAsync(id);
         logger.LogInformation("Updated article {ArticleId} in {Region}", existing.Id, region);
 
         return true;
@@ -89,7 +94,7 @@ public sealed class ArticleService(
 
         db.Articles.Remove(existing);
         await db.SaveChangesAsync(ct);
-        await cache.RemoveAsync(region, id);
+        await cache.RemoveAsync(id);
         logger.LogInformation("Deleted article {ArticleId} in {Region}", id, region);
 
         return true;
