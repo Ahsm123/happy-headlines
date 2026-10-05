@@ -26,6 +26,15 @@ docker compose up --build
 | Seq (logs) | http://localhost:5342 |
 | Zipkin (traces) | http://localhost:9411 |
 | RabbitMQ | http://localhost:15672 |
+| Prometheus | http://localhost:9090 |
+| Grafana (cache hit ratio, admin/grafana) | http://localhost:3000 |
+
+## Caching
+
+Redis (`localhost:6379`) caches articles and comments.
+
+- **ArticleCache**: a background worker fills it every hour with articles from the last 14 days. Entries expire 14 days after publish.
+- **CommentCache**: filled on cache miss. Holds comments for the 30 most recently accessed articles where least recently used is evicted (sorted set `CommentApi:lru`).
 
 ## Diagrams
 
