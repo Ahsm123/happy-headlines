@@ -31,6 +31,12 @@ public class ArticleCache(
 
     public async Task<Article?> GetArticle(Region region, Guid id)
     {
+        if (region != Region.Global)
+        {
+            await using var regionalDb = coordinator.GetArticleDbContext(region);
+            return await regionalDb.Articles.FindAsync(id);
+        }
+
         var key = Key(region, id);
         var cacheHit = await cache.GetAsync(key);
         if (cacheHit is null)
@@ -71,19 +77,13 @@ public class ArticleCache(
     public async Task WarmUpAsync(CancellationToken ct)
     {
         var since = DateTime.UtcNow.AddDays(-14);
-        var count = 0;
-        foreach (var region in Enum.GetValues<Region>())
+        await using var db = coordinator.GetArticleDbContext(Region.Global);
+        var articles = await db.Articles.Where(a => a.PublishDate > since).ToListAsync(ct);
+        foreach (var article in articles)
         {
-            await using var db = coordinator.GetArticleDbContext(region);
-            var articles = await db.Articles.Where(a => a.PublishDate > since).ToListAsync(ct);
-            foreach (var article in articles)
-            {
-                await SetCache(article);
-            }
-
-            count += articles.Count;
+            await SetCache(article);
         }
 
-        logger.LogInformation("Warmed article cache with {ArticleCount} articles", count);
+        logger.LogInformation("Warmed article cache with {ArticleCount} global articles", articles.Count);
     }
 }
