@@ -47,8 +47,8 @@
         "kind": "Panel",
         "spec": {
           "id": 1,
-          "title": "Artikler",
-          "description": "Tællerne i Redis siden sidste nulstilling (FLUSHALL). Samme tal som GET /metrics/cache.",
+          "title": "ArticleCache",
+          "description": "Counters in Redis since the last reset (FLUSHALL). Same numbers as GET /metrics/cache.",
           "links": [],
           "data": {
             "kind": "QueryGroup",
@@ -149,14 +149,14 @@
               "fieldConfig": {
                 "defaults": {
                   "decimals": 0,
-                  "noValue": "ingen trafik",
+                  "noValue": "No data",
                   "mappings": [
                     {
                       "type": "special",
                       "options": {
                         "match": "nan",
                         "result": {
-                          "text": "ingen trafik",
+                          "text": "No data",
                           "index": 0
                         }
                       }
@@ -185,15 +185,15 @@
                           "steps": [
                             {
                               "value": 0,
-                              "color": "red"
+                              "color": "#e66767"
                             },
                             {
                               "value": 0.5,
-                              "color": "#EAB839"
+                              "color": "#c98500"
                             },
                             {
                               "value": 0.8,
-                              "color": "green"
+                              "color": "#199e70"
                             }
                           ]
                         }
@@ -216,7 +216,7 @@
                         "id": "color",
                         "value": {
                           "mode": "fixed",
-                          "fixedColor": "green"
+                          "fixedColor": "#199e70"
                         }
                       }
                     ]
@@ -231,7 +231,7 @@
                         "id": "color",
                         "value": {
                           "mode": "fixed",
-                          "fixedColor": "red"
+                          "fixedColor": "#d95926"
                         }
                       }
                     ]
@@ -246,8 +246,8 @@
         "kind": "Panel",
         "spec": {
           "id": 2,
-          "title": "Kommentarer",
-          "description": "Tællerne i Redis siden sidste nulstilling (FLUSHALL). Samme tal som GET /metrics/cache.",
+          "title": "CommentCache",
+          "description": "Counters in Redis since the last reset (FLUSHALL). Same numbers as GET /metrics/cache.",
           "links": [],
           "data": {
             "kind": "QueryGroup",
@@ -348,14 +348,14 @@
               "fieldConfig": {
                 "defaults": {
                   "decimals": 0,
-                  "noValue": "ingen trafik",
+                  "noValue": "No data",
                   "mappings": [
                     {
                       "type": "special",
                       "options": {
                         "match": "nan",
                         "result": {
-                          "text": "ingen trafik",
+                          "text": "No data",
                           "index": 0
                         }
                       }
@@ -384,15 +384,15 @@
                           "steps": [
                             {
                               "value": 0,
-                              "color": "red"
+                              "color": "#e66767"
                             },
                             {
                               "value": 0.5,
-                              "color": "#EAB839"
+                              "color": "#c98500"
                             },
                             {
                               "value": 0.8,
-                              "color": "green"
+                              "color": "#199e70"
                             }
                           ]
                         }
@@ -415,7 +415,7 @@
                         "id": "color",
                         "value": {
                           "mode": "fixed",
-                          "fixedColor": "green"
+                          "fixedColor": "#199e70"
                         }
                       }
                     ]
@@ -430,7 +430,7 @@
                         "id": "color",
                         "value": {
                           "mode": "fixed",
-                          "fixedColor": "red"
+                          "fixedColor": "#d95926"
                         }
                       }
                     ]
@@ -445,8 +445,8 @@
         "kind": "Panel",
         "spec": {
           "id": 6,
-          "title": "Artikler: gns. svartid, hit vs. miss",
-          "description": "Gennemsnitlig tid for at hente en global artikel i ArticleCache over det valgte tidsrum. Hit = Redis, miss = global DB.",
+          "title": "ArticleCache: avg. response time, hit vs. miss",
+          "description": "Average time to fetch a global article in ArticleCache over the selected time range. Hit = Redis, miss = global DB.",
           "links": [],
           "data": {
             "kind": "QueryGroup",
@@ -496,7 +496,7 @@
                 "textMode": "value_and_name",
                 "colorMode": "value",
                 "graphMode": "none",
-                "justifyMode": "auto",
+                "justifyMode": "center",
                 "wideLayout": true,
                 "showPercentChange": false
               },
@@ -504,7 +504,7 @@
                 "defaults": {
                   "unit": "s",
                   "decimals": 2,
-                  "noValue": "ingen trafik",
+                  "noValue": "No data",
                   "color": {
                     "mode": "fixed",
                     "fixedColor": "text"
@@ -515,7 +515,7 @@
                       "options": {
                         "match": "nan",
                         "result": {
-                          "text": "ingen trafik",
+                          "text": "No data",
                           "index": 0
                         }
                       }
@@ -533,7 +533,7 @@
                         "id": "color",
                         "value": {
                           "mode": "fixed",
-                          "fixedColor": "green"
+                          "fixedColor": "#199e70"
                         }
                       }
                     ]
@@ -548,7 +548,7 @@
                         "id": "color",
                         "value": {
                           "mode": "fixed",
-                          "fixedColor": "red"
+                          "fixedColor": "#d95926"
                         }
                       }
                     ]
@@ -563,8 +563,8 @@
         "kind": "Panel",
         "spec": {
           "id": 7,
-          "title": "Hit ratio over tid",
-          "description": "Hit ratio for det seneste minut for begge caches.",
+          "title": "Hit ratio over time",
+          "description": "Hit ratio over the last minute for both caches.",
           "links": [],
           "data": {
             "kind": "QueryGroup",
@@ -582,8 +582,8 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "max(delta(articleHits[1m])) / (max(delta(articleHits[1m])) + max(delta(articleMisses[1m])))",
-                        "legendFormat": "Artikler",
+                        "expr": "max(increase(articleHits[1m])) / (max(increase(articleHits[1m])) + max(increase(articleMisses[1m])))",
+                        "legendFormat": "ArticleCache",
                         "instant": false,
                         "range": true
                       }
@@ -604,8 +604,8 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "max(delta(commentHits[1m])) / (max(delta(commentHits[1m])) + max(delta(commentMisses[1m])))",
-                        "legendFormat": "Kommentarer",
+                        "expr": "max(increase(commentHits[1m])) / (max(increase(commentHits[1m])) + max(increase(commentMisses[1m])))",
+                        "legendFormat": "CommentCache",
                         "instant": false,
                         "range": true
                       }
@@ -634,7 +634,7 @@
                 "tooltip": {
                   "hideZeros": false,
                   "mode": "multi",
-                  "sort": "none"
+                  "sort": "desc"
                 }
               },
               "fieldConfig": {
@@ -647,9 +647,9 @@
                   },
                   "custom": {
                     "drawStyle": "line",
-                    "lineInterpolation": "linear",
+                    "lineInterpolation": "smooth",
                     "lineWidth": 2,
-                    "fillOpacity": 20,
+                    "fillOpacity": 18,
                     "showPoints": "never",
                     "spanNulls": true,
                     "axisPlacement": "auto",
@@ -663,14 +663,14 @@
                   {
                     "matcher": {
                       "id": "byName",
-                      "options": "Artikler"
+                      "options": "ArticleCache"
                     },
                     "properties": [
                       {
                         "id": "color",
                         "value": {
                           "mode": "fixed",
-                          "fixedColor": "blue"
+                          "fixedColor": "#3987e5"
                         }
                       }
                     ]
@@ -678,14 +678,14 @@
                   {
                     "matcher": {
                       "id": "byName",
-                      "options": "Kommentarer"
+                      "options": "CommentCache"
                     },
                     "properties": [
                       {
                         "id": "color",
                         "value": {
                           "mode": "fixed",
-                          "fixedColor": "purple"
+                          "fixedColor": "#d55181"
                         }
                       }
                     ]

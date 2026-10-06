@@ -57,7 +57,7 @@ public class CommentCache(
     {
         var id = articleId.ToString();
         var db = redis.GetDatabase();
-
+        
         // Opdaterer i LRU-listen, hvornår artiklen sidst er læst. Det skal ske både ved hit og miss,
         // sådan at en populær artikel bliver ved med at være "senest brugt" og ikke bliver evicted.
         await db.SortedSetAddAsync(LruKey, id, DateTime.UtcNow.Ticks);
@@ -68,7 +68,7 @@ public class CommentCache(
             await OnCacheHit();
             return JsonSerializer.Deserialize<List<Comment>>(cacheHit) ?? [];
         }
-
+        
         // Cache miss = hent fra databasen og læg i cachen. Der er ingen TTL.
         // Størrelsen styres kun af LRU-eviction nedenunder, og freshness styres af
         // InvalidateCacheEntry, når der kommer nye comments.
