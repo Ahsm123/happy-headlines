@@ -1,9 +1,11 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics;
+using System.Text.Json;
 using HappyHeadlines.ArticleApi.Data;
 using HappyHeadlines.ArticleApi.Models;
 using HappyHeadlines.Contracts.Articles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using Prometheus;
 using StackExchange.Redis;
 
 namespace HappyHeadlines.ArticleApi.Caching;
@@ -19,6 +21,11 @@ public class ArticleCache(
     private const string HitsKey = "ArticleApi:cache:hits";
     private const string MissesKey = "ArticleApi:cache:misses";
 
+    // Tid for at hente en global artikel, opdelt på hit og miss, så dashboardet kan vise, hvad cachen sparer.
+    private static readonly Histogram Duration = Metrics.CreateHistogram(
+        "article_cache_duration_seconds", "Time to get a global article",
+        new HistogramConfiguration { LabelNames = ["result"] });
+
     private Task OnCacheHit() => redis.GetDatabase().StringIncrementAsync(HitsKey);
     private Task OnCacheMiss() => redis.GetDatabase().StringIncrementAsync(MissesKey);
 
@@ -32,10 +39,12 @@ public class ArticleCache(
 
     public async Task<Article?> GetArticle(Guid id)
     {
+        var start = Stopwatch.GetTimestamp();
         var cached = await cache.GetAsync(id.ToString());
         if (cached is not null)
         {
             await OnCacheHit();
+            Duration.WithLabels("hit").Observe(Stopwatch.GetElapsedTime(start).TotalSeconds);
             return JsonSerializer.Deserialize<Article>(cached);
         }
 
@@ -47,6 +56,7 @@ public class ArticleCache(
             await SetCache(article);
         }
 
+        Duration.WithLabels("miss").Observe(Stopwatch.GetElapsedTime(start).TotalSeconds);
         return article;
     }
 

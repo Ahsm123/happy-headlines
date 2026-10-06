@@ -94,13 +94,13 @@ public class CommentCache(
         }
 
         // Overflow = de ældste med laveste score
-        var lastRecentlyUsed = await db.SortedSetRangeByRankAsync(LruKey, 0, overflow - 1);
-        foreach (var articleId in lastRecentlyUsed)
+        var longestSinceUsed = await db.SortedSetRangeByRankAsync(LruKey, 0, overflow - 1);
+        foreach (var articleId in longestSinceUsed)
         {
             await cache.RemoveAsync(articleId.ToString());
         }
 
         await db.SortedSetRemoveRangeByRankAsync(LruKey, 0, overflow - 1);
-        logger.LogInformation("Evicted {Count} articles from comment cache", lastRecentlyUsed.Length);
+        logger.LogInformation("Evicted {Count} articles from comment cache", longestSinceUsed.Length);
     }
 }
