@@ -66,7 +66,7 @@
                       },
                       "spec": {
                         "editorMode": "code",
-                        "expr": "max(delta(articleHits[1m])) / (max(delta(articleHits[1m])) + max(delta(articleMisses[1m]))",
+                        "expr": "max(delta(articleHits[1m])) / (max(delta(articleHits[1m])) + max(delta(articleMisses[1m])))",
                         "instant": false,
                         "legendFormat": "__auto",
                         "range": true
