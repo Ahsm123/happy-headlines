@@ -1,0 +1,28 @@
+﻿name: article-api
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - src/HappyHeadlines.ArticleApi/**
+      - src/HappyHeadlines.ServiceDefaults/**
+      - src/HappyHeadlines.Contracts/**
+      - Directory.Build.props
+      - .dockerignore
+      - .github/workflows/article-api.yml
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v6
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: src/HappyHeadlines.ArticleApi/Dockerfile
+        
+        
+  
