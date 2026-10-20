@@ -4,6 +4,13 @@ on:
   push:
     branches:
       - main
+    paths:
+      - src/HappyHeadlines.DraftApi/**
+      - src/HappyHeadlines.ServiceDefaults/**
+      - src/HappyHeadlines.Contracts/**
+      - Directory.Build.props
+      - .dockerignore
+      - .github/workflows/draft-api.yml
 
 jobs:
   build:
@@ -16,12 +23,6 @@ jobs:
         with:
           context: .
           file: src/HappyHeadlines.DraftApi/Dockerfile
-        paths:
-          - src/HappyHeadlines.DraftApi/**
-          - src/HappyHeadlines.ServiceDefaults/**
-          - src/HappyHeadlines.Contracts/**
-          - Directory.Build.props
-          - .dockerignore
-          - .github/workflows/draft-api.yml
+        
         
   
