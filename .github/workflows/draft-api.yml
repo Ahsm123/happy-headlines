@@ -12,15 +12,14 @@ on:
       - .dockerignore
       - .github/workflows/draft-api.yml
 
-permissions:
+permissions: 
   contents: read
   packages: write
-
-
-jobs:
+  
+jobs: 
   build:
     runs-on: ubuntu-latest
-
+    
     steps:
       - uses: actions/checkout@v6
       - uses: docker/setup-buildx-action@v4
@@ -29,15 +28,13 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
+          
       - uses: docker/build-push-action@v7
         with:
           context: .
           file: src/HappyHeadlines.DraftApi/Dockerfile
           push: true
-          tags: |
-            ghcr.io/ahsm123/happy-headlines-draft-api:${{ github.run_number }}
-            ghcr.io/ahsm123/happy-headlines-draft-api:latest
+          tags: ghcr.io/ahsm123/happy-headlines-draft-api:${{ github.run_number }}
         
         
   

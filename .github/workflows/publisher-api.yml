@@ -15,8 +15,7 @@ on:
 permissions: 
   contents: read
   packages: write
-
-
+  
 jobs: 
   build:
     runs-on: ubuntu-latest
@@ -35,9 +34,7 @@ jobs:
           context: .
           file: src/HappyHeadlines.PublisherApi/Dockerfile
           push: true
-          tags: |
-            ghcr.io/ahsm123/happy-headlines-publisher-api:${{ github.run_number }}
-            ghcr.io/ahsm123/happy-headlines-publisher-api:latest
+          tags: ghcr.io/ahsm123/happy-headlines-publisher-api:${{ github.run_number }}
         
         
   
