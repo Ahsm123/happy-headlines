@@ -36,8 +36,8 @@ jobs:
           file: src/HappyHeadlines.PublisherApi/Dockerfile
           push: true
           tags: |
-            ghcr.io/ahsm123/happy-headlines-draft-api:${{ github.run_number }}
-            ghcr.io/ahsm123/happy-headlines-draft-api:latest
+            ghcr.io/ahsm123/happy-headlines-publisher-api:${{ github.run_number }}
+            ghcr.io/ahsm123/happy-headlines-publisher-api:latest
         
         
   
