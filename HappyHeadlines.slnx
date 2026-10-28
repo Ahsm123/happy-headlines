@@ -11,6 +11,7 @@
     <Project Path="src/HappyHeadlines.ServiceDefaults/HappyHeadlines.ServiceDefaults.csproj" />
     <Project Path="src/HappyHeadlines.ArticleApi/HappyHeadlines.ArticleApi.csproj" />
     <Project Path="src/HappyHeadlines.DraftApi/HappyHeadlines.DraftApi.csproj" />
+    <Project Path="src/HappyHeadlines.SubscriberApi/HappyHeadlines.SubscriberApi.csproj" />
   </Folder>
   <Folder Name="/tests/" />
   <Folder Name="/tests/HappyHeadlines.CommentApi.Tests/">
