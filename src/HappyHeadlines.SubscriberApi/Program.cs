@@ -14,7 +14,7 @@ builder.Services.AddMessaging(builder.Configuration);
 // Data
 
 // Services
-builder.Services.AddScoped<ISubscriberService, SubscriberService>();
+builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 
 // Messaging
 
@@ -32,8 +32,4 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
-
-
 app.Run();
-

@@ -1,3 +1,5 @@
-﻿namespace HappyHeadlines.Contracts.Subscribers;
+﻿using HappyHeadlines.Contracts.Articles;
 
-public record UnsubscribeRequest(string Email);
+namespace HappyHeadlines.Contracts.Subscribers;
+
+public record UnsubscribeRequest(string Email, Region Region);

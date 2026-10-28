@@ -2,7 +2,7 @@
 
 namespace HappyHeadlines.SubscriberApi.Models;
 
-public class Subscriber
+public class Subscription
 {
     public Guid Id { get; set; }
     public required string Email { get; set; }

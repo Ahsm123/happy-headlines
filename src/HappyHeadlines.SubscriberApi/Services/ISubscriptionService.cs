@@ -4,9 +4,9 @@ using HappyHeadlines.SubscriberApi.Models;
 
 namespace HappyHeadlines.SubscriberApi.Services;
 
-public interface ISubscriberService
+public interface ISubscriptionService
 {
     Task<bool> SubscribeAsync(SubscribeRequest request, CancellationToken ct);
     Task<bool> UnsubscribeAsync(UnsubscribeRequest request, CancellationToken ct);
-    Task<IEnumerable<Subscriber>> GetAllFromRegionAsync(Region region, CancellationToken ct);
+    Task<IEnumerable<Subscription>> GetAllFromRegionAsync(Region region, CancellationToken ct);
 }

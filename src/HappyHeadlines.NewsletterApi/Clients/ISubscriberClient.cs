@@ -4,6 +4,6 @@ namespace HappyHeadlines.NewsletterApi.Clients;
 
 public interface ISubscriberClient
 {
-    Task<List<SubscriberDto>> GetSubscriberEmails();
+    Task<List<SubscriptionDto>> GetSubscriberEmails();
     
 }
