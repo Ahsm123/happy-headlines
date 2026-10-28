@@ -293,6 +293,33 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+        
+  subscriber-api:
+    build:
+      context: .
+      dockerfile: src/HappyHeadlines.SubscriberApi/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Seq: http://seq:5341
+      ConnectionStrings__Zipkin: http://zipkin:9411/api/v2/spans
+      ConnectionStrings__Messaging: host=rabbitmq;username=kalo;password=kalo
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+  
+  subscriber-db:
+    image: postgres:17
+    ports: [ "5444:5432" ]
+    environment:
+      POSTGRES_DB: subscriberdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: dev
+    volumes:
+      - subscriber-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      retries: 10
   
   redis:
     image: redis:8-alpine
@@ -388,6 +415,7 @@ volumes:
   comment-db-data:
   profanity-db-data:
   draft-db-data:
+  subscriber-db-data:
   rps-seq-data:
   zipkin-data:
   rabbitmq-lib:
