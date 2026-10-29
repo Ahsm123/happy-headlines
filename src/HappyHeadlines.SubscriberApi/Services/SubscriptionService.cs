@@ -1,5 +1,7 @@
 ﻿using HappyHeadlines.Contracts.Articles;
+using HappyHeadlines.Contracts.Events;
 using HappyHeadlines.Contracts.Subscribers;
+using HappyHeadlines.ServiceDefaults;
 using HappyHeadlines.SubscriberApi.Data;
 using HappyHeadlines.SubscriberApi.Models;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +10,7 @@ namespace HappyHeadlines.SubscriberApi.Services;
 
 public class SubscriptionService(
     SubscriptionDbContext db,
+    IMessageClient messageClient,
     ILogger<SubscriptionService> logger
 ) : ISubscriptionService
 {
@@ -29,7 +32,10 @@ public class SubscriptionService(
 
         await db.Subscriptions.AddAsync(subscription, ct);
         await db.SaveChangesAsync(ct);
-
+        
+        var message = new NewSubscriptionEvent(subscription.Email, subscription.SubscribedRegion);
+        await messageClient.PublishAsync<NewSubscriptionEvent>(message, ct);
+        
         return true;
     }
 

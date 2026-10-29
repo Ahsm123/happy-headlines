@@ -6,4 +6,5 @@ public interface INewsletterService
 {
     Task SendImmediateNewsletterAsync(ArticlePublishedEvent publishedEvent, CancellationToken ct);
     Task SendDailyNewsletterAsync(CancellationToken ct);
+    Task SendWelcomeMailAsync(NewSubscriptionEvent message,CancellationToken ct);
 }

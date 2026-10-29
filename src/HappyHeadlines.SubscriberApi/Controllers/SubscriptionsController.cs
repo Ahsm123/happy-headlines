@@ -28,6 +28,8 @@ public class SubscriptionsController(ISubscriptionService subscriptionService) :
     public async Task<ActionResult<IEnumerable<SubscriptionDto>>> GetAllFromRegion(Region region, CancellationToken ct)
     {
         var subscribers = await subscriptionService.GetAllFromRegionAsync(region, ct);
-        return Ok(subscribers.Select(s => s.ToDto())); 
+        return Ok(subscribers.Select(s => s.ToDto()));
     }
+    
+    
 }

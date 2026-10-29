@@ -53,4 +53,10 @@ public sealed class NewsletterService(
                 articlesForSub.Count, sub.Email);
         }
     }
+
+    public async Task SendWelcomeMailAsync(NewSubscriptionEvent message, CancellationToken ct)
+    {
+        logger.LogInformation("Send Welcome mail to new subscriber with email {Email} for {Region}", message.Email,
+            message.Region);
+    }
 }
