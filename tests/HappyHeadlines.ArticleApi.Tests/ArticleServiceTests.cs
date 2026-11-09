@@ -28,6 +28,21 @@ public class ArticleServiceTests
     }
 
     [Fact]
+    public async Task Latest_SecondCall_IsServedFromCache()
+    {
+        // Arrange
+        await AddArticle(Region.Europe, DateTime.UtcNow);
+        await _service.GetLatestAsync(2, CancellationToken.None);
+        var callsAfterFirst = _coordinator.CallCount;
+
+        // Act
+        await _service.GetLatestAsync(2, CancellationToken.None);
+
+        // Assert
+        Assert.Equal(callsAfterFirst, _coordinator.CallCount);
+    }
+
+    [Fact]
     public async Task Latest_MergesRegions_NewestFirst()
     {
         // Arrange
