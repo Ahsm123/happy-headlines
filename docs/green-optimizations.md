@@ -72,3 +72,33 @@ public async Task<IEnumerable<ArticleSummaryDto>> GetLatestAsync(int count, Canc
 
 The top 50 is cached in Redis for 5 minutes, so most requests never touch a database. The trade-off is that the list
 can be up to 5 minutes old.
+
+## 3. Index on PublishDate
+
+**Tactic:** Use Efficient Databases
+
+Latest, the daily newsletter and the cache warmup all sort or filter articles on `PublishDate`, but the column had no
+index. Every query read the whole table, and latest sorted all of it to find the 50 newest.
+
+**Before**
+
+```csharp
+public class ArticleDbContext : DbContext
+{
+    public DbSet<Article> Articles { get; set; }
+}
+```
+
+**After**
+
+```csharp
+protected override void OnModelCreating(ModelBuilder modelBuilder)
+{
+    modelBuilder.Entity<Article>()
+        .HasIndex(a => a.PublishDate);
+}
+```
+
+No queries changed. Postgres picks up the index by itself, so latest reads the 50 newest rows straight from the index
+and stops, and date filters jump to the matching rows instead of scanning the table. The cost is a bit of disk and
+slightly slower writes, which is a good deal for articles that are written once and read often.

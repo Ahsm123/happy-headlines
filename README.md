@@ -44,6 +44,7 @@ Improvements based on Green Architecture Framework (GAF) tactics, with before an
 
 - Latest articles: summary instead of full article (Avoid Unnecessary Resources)
 - Latest articles: cache on demand (Fetch Data from the Proximity)
+- Index on PublishDate (Use Efficient Databases)
 
 ## Diagrams
 
