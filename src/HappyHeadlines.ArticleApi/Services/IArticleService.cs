@@ -11,5 +11,5 @@ public interface IArticleService
     Task<IEnumerable<Article>> GetAllAsync(Region region, DateTime? fromDate, CancellationToken ct);
     Task<bool> UpdateAsync(Region region, Guid id, UpdateArticleRequest request, CancellationToken ct);
     Task<bool> DeleteAsync(Region region, Guid id, CancellationToken ct);
-    Task<IEnumerable<Article>> GetLatestAsync(int count, CancellationToken ct);
+    Task<IEnumerable<ArticleSummaryDto>> GetLatestAsync(int count, CancellationToken ct);
 }

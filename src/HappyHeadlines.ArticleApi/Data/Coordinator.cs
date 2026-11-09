@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HappyHeadlines.ArticleApi.Data;
 
-public class Coordinator(IConfiguration configuration)
+public class Coordinator(IConfiguration configuration) : ICoordinator
 {
     public ArticleDbContext GetArticleDbContext(Region region) =>
         new(new DbContextOptionsBuilder<ArticleDbContext>()

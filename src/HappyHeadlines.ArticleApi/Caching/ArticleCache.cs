@@ -12,7 +12,7 @@ namespace HappyHeadlines.ArticleApi.Caching;
 
 public class ArticleCache(
     IDistributedCache cache,
-    Coordinator coordinator,
+    ICoordinator coordinator,
     IConnectionMultiplexer redis,
     ILogger<ArticleCache> logger)
 {

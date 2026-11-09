@@ -9,9 +9,13 @@ namespace HappyHeadlines.ArticleApi.Services;
 
 public sealed class ArticleService(
     ArticleCache cache,
-    Coordinator coordinator,
+    ICoordinator coordinator,
     ILogger<ArticleService> logger) : IArticleService
+
 {
+    private const int MaxLatestCount = 50;
+    private const int TeaserLength = 200;
+
     public async Task CreateAsync(ArticlePublishedEvent publishedEvent, CancellationToken ct)
     {
         await using var db = coordinator.GetArticleDbContext(publishedEvent.Region);
@@ -100,19 +104,32 @@ public sealed class ArticleService(
         return true;
     }
 
-    public async Task<IEnumerable<Article>> GetLatestAsync(int count, CancellationToken ct)
+    public async Task<IEnumerable<ArticleSummaryDto>> GetLatestAsync(int count, CancellationToken ct)
     {
-        var articles = new List<Article>();
-        foreach (var region in Enum.GetValues<Region>())
+        count = Math.Clamp(count, 0, MaxLatestCount);
+
+        var tasks = Enum.GetValues<Region>().Select(async region =>
         {
             await using var db = coordinator.GetArticleDbContext(region);
-            var regionArticles = await db.Articles
+            return await db.Articles
                 .OrderByDescending(a => a.PublishDate)
                 .Take(count)
+                .Select(a => new ArticleSummaryDto(
+                    a.Id,
+                    a.Title,
+                    a.Content.Substring(0, a.Content.Length > TeaserLength ? TeaserLength : a.Content.Length),
+                    a.Author,
+                    a.PublishDate,
+                    a.Region))
                 .ToListAsync(ct);
-            articles.AddRange(regionArticles);
-        }
+        });
 
-        return articles.OrderByDescending(a => a.PublishDate).Take(count).ToList();
+        var results = await Task.WhenAll(tasks);
+
+        return results
+            .SelectMany(r => r)
+            .OrderByDescending(a => a.PublishDate)
+            .Take(count)
+            .ToList();
     }
 }

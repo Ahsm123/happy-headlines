@@ -61,10 +61,10 @@ public class ArticlesController(IArticleService articleService) : ControllerBase
     }
 
     [HttpGet("/api/v1/latest/articles")]
-    public async Task<ActionResult<IEnumerable<ArticleDto>>> GetLatest(int count, CancellationToken ct)
+    public async Task<ActionResult<IEnumerable<ArticleSummaryDto>>> GetLatest(int count, CancellationToken ct)
     {
         var articles = await articleService.GetLatestAsync(count, ct);
 
-        return Ok(articles.Select(a => a.ToDto()));
+        return Ok(articles);
     }
 }
