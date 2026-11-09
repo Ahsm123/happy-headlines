@@ -19,7 +19,7 @@ builder.AddServiceDefaults();
 builder.Services.AddMessaging(builder.Configuration);
 
 // Data
-builder.Services.AddSingleton<Coordinator>();
+builder.Services.AddSingleton<ICoordinator, Coordinator>();
 
 // Caching
 var redisConnection = builder.Configuration.GetConnectionString("Redis")
@@ -49,7 +49,7 @@ var app = builder.Build();
 
 if (args.Contains("migrate"))
 {
-    var coordinator = app.Services.GetRequiredService<Coordinator>();
+    var coordinator = app.Services.GetRequiredService<ICoordinator>();
     foreach (var region in Enum.GetValues<Region>())
     {
         using var db = coordinator.GetArticleDbContext(region);

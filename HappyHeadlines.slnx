@@ -15,6 +15,7 @@
   </Folder>
   <Folder Name="/tests/" />
   <Folder Name="/tests/HappyHeadlines.CommentApi.Tests/">
+    <Project Path="tests/HappyHeadlines.ArticleApi.Tests/HappyHeadlines.ArticleApi.Tests.csproj" />
     <Project Path="tests/HappyHeadlines.CommentApi.Tests/HappyHeadlines.CommentApi.Tests.csproj" />
   </Folder>
 </Solution>
