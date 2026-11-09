@@ -108,12 +108,24 @@ public sealed class ArticleService(
     {
         count = Math.Clamp(count, 0, MaxLatestCount);
 
+        var latest = await cache.GetLatestAsync();
+        if (latest is null)
+        {
+            latest = await FetchLatestFromRegions(ct);
+            await cache.SetLatestAsync(latest);
+        }
+
+        return latest.Take(count);
+    }
+
+    private async Task<List<ArticleSummaryDto>> FetchLatestFromRegions(CancellationToken ct)
+    {
         var tasks = Enum.GetValues<Region>().Select(async region =>
         {
             await using var db = coordinator.GetArticleDbContext(region);
             return await db.Articles
                 .OrderByDescending(a => a.PublishDate)
-                .Take(count)
+                .Take(MaxLatestCount)
                 .Select(a => new ArticleSummaryDto(
                     a.Id,
                     a.Title,
@@ -129,7 +141,8 @@ public sealed class ArticleService(
         return results
             .SelectMany(r => r)
             .OrderByDescending(a => a.PublishDate)
-            .Take(count)
+            .Take(MaxLatestCount)
             .ToList();
     }
 }
+

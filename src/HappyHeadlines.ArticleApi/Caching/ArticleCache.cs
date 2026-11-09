@@ -17,9 +17,11 @@ public class ArticleCache(
     ILogger<ArticleCache> logger)
 {
     private static readonly TimeSpan CacheWindow = TimeSpan.FromDays(14);
-    
+
     private const string HitsKey = "ArticleApi:cache:hits";
     private const string MissesKey = "ArticleApi:cache:misses";
+    private const string LatestKey = "latest";
+    private static readonly TimeSpan LatestTtl = TimeSpan.FromMinutes(5);
 
     // Tid for at hente en global artikel, opdelt på hit og miss, så dashboardet kan vise, hvad cachen sparer.
     private static readonly Histogram Duration = Metrics.CreateHistogram(
@@ -34,6 +36,23 @@ public class ArticleCache(
         var db = redis.GetDatabase();
         return ((long)await db.StringGetAsync(HitsKey), (long)await db.StringGetAsync(MissesKey));
     }
+
+    public async Task<List<ArticleSummaryDto>?> GetLatestAsync()
+    {
+        var cached = await cache.GetAsync(LatestKey);
+        if (cached is null)
+        {
+            return null;
+        }
+
+        return JsonSerializer.Deserialize<List<ArticleSummaryDto>>(cached);
+    }
+
+    public Task SetLatestAsync(List<ArticleSummaryDto> latest) =>
+        cache.SetAsync(
+            LatestKey,
+            JsonSerializer.SerializeToUtf8Bytes(latest),
+            new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = LatestTtl });
 
     public Task RemoveAsync(Guid id) => cache.RemoveAsync(id.ToString());
 
