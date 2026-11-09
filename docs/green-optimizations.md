@@ -102,3 +102,43 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
 No queries changed. Postgres picks up the index by itself, so latest reads the 50 newest rows straight from the index
 and stops, and date filters jump to the matching rows instead of scanning the table. The cost is a bit of disk and
 slightly slower writes, which is a good deal for articles that are written once and read often.
+
+## 4. Log once per newsletter, not once per subscriber
+
+**Tactic:** Reduce Logging
+
+The newsletter service wrote one log line per subscriber, with their email address. With 10,000 subscribers that is
+10,000 lines to Seq for every published article, plus the same again for every daily newsletter.
+
+**Before**
+
+```csharp
+foreach (var sub in subs)
+{
+    if (sub.Region == publishedEvent.Region)
+    {
+        logger.LogInformation("Sending article {ArticleTitle} to {SubscriberEmail}",
+            publishedEvent.Title, sub.Email);
+    }
+}
+```
+
+**After**
+
+```csharp
+var sentCount = 0;
+foreach (var sub in subs)
+{
+    if (sub.Region == publishedEvent.Region)
+    {
+        // Send newsletter to subscriber
+        sentCount++;
+    }
+}
+
+logger.LogInformation("Article: {ArticleTitle} was sent to {SubCount} subscribers in {Region}",
+    publishedEvent.Title, sentCount, publishedEvent.Region);
+```
+
+The daily newsletter got the same change. One line per send-out instead of one per subscriber, so the amount of logging
+no longer grows with the number of subscribers. As a bonus, email addresses are no longer stored in the logs.
