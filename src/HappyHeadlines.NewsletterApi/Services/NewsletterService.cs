@@ -17,14 +17,18 @@ public sealed class NewsletterService(
         logger.LogInformation("Received article {ArticleId} for {Region}", publishedEvent.ArticleId,
             publishedEvent.Region);
         var subs = await subscriberClient.GetSubscriberEmails();
+        var sentCount = 0;
         foreach (var sub in subs)
         {
             if (sub.Region == publishedEvent.Region)
             {
-                logger.LogInformation("Sending article {ArticleTitle} to {SubscriberEmail}",
-                    publishedEvent.Title, sub.Email);
+                //Send newsletter to subscriber
+                sentCount++;
             }
         }
+
+        logger.LogInformation("Article: {ArticleTitle} was sent to {SubCount} subscribers in {Region}",
+            publishedEvent.Title, sentCount, publishedEvent.Region);
     }
 
     public async Task SendDailyNewsletterAsync(CancellationToken ct)
@@ -49,9 +53,11 @@ public sealed class NewsletterService(
         foreach (var sub in subs)
         {
             var articlesForSub = articles.Where(a => a.Region == sub.Region).ToList();
-            logger.LogInformation("Sent {ArticleCount} articles to {SubscriberEmail}",
-                articlesForSub.Count, sub.Email);
         }
+
+        logger.LogInformation(
+            "Sent daily newsletter ({ArticleCount} articles across all regions) to {SubCount} subscribers",
+            articles.Count, subs.Count);
     }
 
     public async Task SendWelcomeMailAsync(NewSubscriptionEvent message, CancellationToken ct)
