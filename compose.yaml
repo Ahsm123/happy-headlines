@@ -288,6 +288,7 @@ services:
       ConnectionStrings__Zipkin: http://zipkin:9411/api/v2/spans
       ConnectionStrings__Messaging: host=rabbitmq;username=kalo;password=kalo
       Apis__ArticleApi: http://article-lb:80
+      Features__SubscriberService: "false"
     depends_on:
       article-lb:
         condition: service_healthy

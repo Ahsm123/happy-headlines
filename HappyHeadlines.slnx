@@ -13,7 +13,9 @@
     <Project Path="src/HappyHeadlines.DraftApi/HappyHeadlines.DraftApi.csproj" />
     <Project Path="src/HappyHeadlines.SubscriberApi/HappyHeadlines.SubscriberApi.csproj" />
   </Folder>
-  <Folder Name="/tests/" />
+  <Folder Name="/tests/">
+    <Project Path="tests/HappyHeadlines.NewsletterApi.Tests/HappyHeadlines.NewsletterApi.Tests.csproj" />
+  </Folder>
   <Folder Name="/tests/HappyHeadlines.CommentApi.Tests/">
     <Project Path="tests/HappyHeadlines.ArticleApi.Tests/HappyHeadlines.ArticleApi.Tests.csproj" />
     <Project Path="tests/HappyHeadlines.CommentApi.Tests/HappyHeadlines.CommentApi.Tests.csproj" />
