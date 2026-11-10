@@ -13,8 +13,24 @@ on:
       - .github/workflows/subscriber-api.yml
 
 jobs:
+  ci:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v6
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build
+        run: dotnet build src/HappyHeadlines.SubscriberApi
+
   push_to_registry:
     name: Push Docker image to ghcr
+    needs: ci
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -40,6 +56,3 @@ jobs:
           file: src/HappyHeadlines.SubscriberApi/Dockerfile
           push: true
           tags: ghcr.io/ahsm123/happy-headlines-subscriber-api:${{ github.run_number }}
-        
-        
-  
