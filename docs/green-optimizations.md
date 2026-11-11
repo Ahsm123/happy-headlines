@@ -48,7 +48,31 @@ The latest list is the same for everyone, but every request still queried all 8 
 ```csharp
 public async Task<IEnumerable<ArticleSummaryDto>> GetLatestAsync(int count, CancellationToken ct)
 {
-    // Query all 8 regions on every request
+    count = Math.Clamp(count, 0, MaxLatestCount);
+
+    var tasks = Enum.GetValues<Region>().Select(async region =>
+    {
+        await using var db = coordinator.GetArticleDbContext(region);
+        return await db.Articles
+            .OrderByDescending(a => a.PublishDate)
+            .Take(count)
+            .Select(a => new ArticleSummaryDto(
+                a.Id,
+                a.Title,
+                a.Content.Substring(0, a.Content.Length > TeaserLength ? TeaserLength : a.Content.Length),
+                a.Author,
+                a.PublishDate,
+                a.Region))
+            .ToListAsync(ct);
+    });
+
+    var results = await Task.WhenAll(tasks);
+
+    return results
+        .SelectMany(r => r)
+        .OrderByDescending(a => a.PublishDate)
+        .Take(count)
+        .ToList();
 }
 ```
 
@@ -102,6 +126,13 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
 No queries changed. Postgres picks up the index by itself, so latest reads the 50 newest rows straight from the index
 and stops, and date filters jump to the matching rows instead of scanning the table. The cost is a bit of disk and
 slightly slower writes, which is a good deal for articles that are written once and read often.
+
+Measured with [`scripts/explain-publishdate.sql`](../scripts/explain-publishdate.sql) on 100,000 articles:
+
+| | Plan | Pages read | Time |
+|---|---|---|---|
+| Before | Parallel Seq Scan + Sort | 1,466 | 63.1 ms |
+| After | Index Scan Backward | 3 | 0.197 ms |
 
 ## 4. Log once per newsletter, not once per subscriber
 
